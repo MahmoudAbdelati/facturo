@@ -1,5 +1,5 @@
-import "@/app/ui/global.css";
-import { geistMono, geistSans } from "@/app/ui/fonts";
+import "@/app/globals.css";
+import { geistMono, geistSans } from "@/lib/fonts";
 import { Providers } from "@/components/theme/providers";
 import { Metadata } from "next";
 

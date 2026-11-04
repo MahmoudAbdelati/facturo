@@ -1,5 +1,14 @@
-## Next.js App Router Course - Starter
+# Facturo
 
-This is the starter template for the Next.js App Router Course. It contains the starting code for the dashboard application.
+Get paid, not chased. Invoicing for freelancers and small studios.
 
-For more information, see the [course curriculum](https://nextjs.org/learn) on the Next.js Website.
+Built with Next.js (App Router), Postgres, Auth.js and Tailwind CSS.
+
+## Development
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Copy your Postgres connection string into `.env` as `POSTGRES_URL`, and set `AUTH_SECRET`.

@@ -23,11 +23,22 @@ export function LogoMark({ className }: { className?: string }) {
   );
 }
 
-export function Logo({ className }: { className?: string }) {
+export function Logo({
+  className,
+  wordmarkClassName,
+}: {
+  className?: string;
+  wordmarkClassName?: string;
+}) {
   return (
     <span className={clsx("inline-flex items-center gap-2.5", className)}>
       <LogoMark />
-      <span className="text-lg font-semibold tracking-tight text-foreground">
+      <span
+        className={clsx(
+          "text-lg font-semibold tracking-tight text-foreground",
+          wordmarkClassName,
+        )}
+      >
         Facturo
       </span>
     </span>

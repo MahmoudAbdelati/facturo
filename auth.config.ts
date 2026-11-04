@@ -1,5 +1,13 @@
 import type { NextAuthConfig } from "next-auth";
 
+const appRoutes = ["/overview", "/invoices", "/clients", "/settings"];
+
+function isAppRoute(pathname: string) {
+  return appRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+}
+
 export const authConfig = {
   trustHost: true,
   pages: {
@@ -8,15 +16,14 @@ export const authConfig = {
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnDashboard = nextUrl.pathname.startsWith("/dashboard");
-      if (isOnDashboard) {
-        if (isLoggedIn) return true;
-        return false; // Redirect unauthenticated users to login page
-      } else if (isLoggedIn) {
-        return Response.redirect(new URL("/dashboard", nextUrl));
+
+      if (isAppRoute(nextUrl.pathname)) return isLoggedIn;
+
+      if (isLoggedIn && nextUrl.pathname === "/login") {
+        return Response.redirect(new URL("/overview", nextUrl));
       }
       return true;
     },
   },
-  providers: [], // Add providers with an empty array for now
+  providers: [],
 } satisfies NextAuthConfig;
