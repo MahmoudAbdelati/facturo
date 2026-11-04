@@ -2,6 +2,60 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Color tokens are HSL channels so Tailwind opacity modifiers work (bg-accent/10). */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+    --surface: 0 0% 98%;
+    --surface-raised: 0 0% 100%;
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+    --accent: 163.1 94.2% 23.9%;
+    --accent-hover: 161.4 93.5% 30.4%;
+    --accent-foreground: 0 0% 100%;
+    --accent-subtle: 152 81% 96%;
+    --ring: 161.4 93.5% 30.4%;
+    --success: 161.4 93.5% 30.4%;
+    --warning: 32.1 94.6% 43.7%;
+    --danger: 0 72.2% 50.6%;
+    --info: 221.2 83.2% 53.3%;
+    --radius: 0.625rem;
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+    --surface: 240 5.9% 10%;
+    --surface-raised: 240 5.3% 13%;
+    --border: 240 3.7% 15.9%;
+    --input: 240 5.3% 26.1%;
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+    --accent: 160.1 84.1% 39.4%;
+    --accent-hover: 156.2 71.6% 66.9%;
+    --accent-foreground: 240 10% 3.9%;
+    --accent-subtle: 164 86% 16%;
+    --ring: 160.1 84.1% 39.4%;
+    --success: 160.1 84.1% 39.4%;
+    --warning: 37.7 92.1% 50.2%;
+    --danger: 0 84.2% 60.2%;
+    --info: 213.1 93.9% 67.8%;
+    color-scheme: dark;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+
+  *:focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+}
+
 input[type='number'] {
   -moz-appearance: textfield;
   appearance: textfield;
