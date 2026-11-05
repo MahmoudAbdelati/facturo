@@ -32,7 +32,7 @@ export function MobileNav() {
   return (
     <nav
       aria-label="Main"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/95 pb-[env(safe-area-inset-bottom)] backdrop-blur md:hidden"
+      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-surface/85 pb-[env(safe-area-inset-bottom)] backdrop-blur backdrop-saturate-150 md:hidden"
     >
       <div className="flex h-16 items-stretch">
         {tab(overview)}

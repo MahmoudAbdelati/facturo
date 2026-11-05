@@ -17,6 +17,7 @@
     --accent-hover: 161.4 93.5% 30.4%;
     --accent-foreground: 0 0% 100%;
     --accent-subtle: 152 81% 96%;
+    --accent-subtle-foreground: 163.1 94.2% 23.9%;
     --ring: 161.4 93.5% 30.4%;
     --success: 161.4 93.5% 30.4%;
     --warning: 32.1 94.6% 43.7%;
@@ -39,6 +40,8 @@
     --accent-hover: 156.2 71.6% 66.9%;
     --accent-foreground: 240 10% 3.9%;
     --accent-subtle: 164 86% 16%;
+    /* emerald-400: the 500 accent is only 3.9:1 on the subtle tint */
+    --accent-subtle-foreground: 158.1 64.4% 51.6%;
     --ring: 160.1 84.1% 39.4%;
     --success: 160.1 84.1% 39.4%;
     --warning: 37.7 92.1% 50.2%;

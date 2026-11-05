@@ -34,6 +34,7 @@ const config: Config = {
           hover: token('accent-hover'),
           foreground: token('accent-foreground'),
           subtle: token('accent-subtle'),
+          'subtle-foreground': token('accent-subtle-foreground'),
         },
         success: token('success'),
         warning: token('warning'),

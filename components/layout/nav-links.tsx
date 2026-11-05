@@ -33,8 +33,9 @@ export function NavLinks() {
             className={clsx(
               "flex h-10 items-center justify-center gap-2.5 rounded-lg px-3 text-sm font-medium transition-colors lg:justify-start",
               active
-                ? "bg-muted text-foreground"
-                : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                ? // bg-muted is almost the sidebar's own colour in light mode
+                  "bg-foreground/10 text-foreground dark:bg-muted"
+                : "text-muted-foreground hover:bg-foreground/5 hover:text-foreground dark:hover:bg-muted",
             )}
           >
             <Icon className={clsx("h-4 w-4", active && "text-accent")} />

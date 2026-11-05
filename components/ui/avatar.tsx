@@ -6,7 +6,7 @@ export function Avatar({ name, className }: { name: string; className?: string }
     <span
       aria-hidden="true"
       className={clsx(
-        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-xs font-semibold text-accent",
+        "inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent-subtle text-xs font-semibold text-accent-subtle-foreground",
         className,
       )}
     >

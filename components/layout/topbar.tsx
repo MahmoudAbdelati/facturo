@@ -11,7 +11,7 @@ export async function Topbar() {
   const email = session?.user?.email ?? "";
 
   return (
-    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur sm:px-6 lg:px-10">
+    <header className="sticky top-0 z-30 flex h-14 shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur backdrop-saturate-150 sm:px-6 lg:px-10">
       {/* On phones the sidebar is gone, so the logo moves up here. */}
       <Link href="/overview" aria-label="Facturo home" className="md:hidden">
         <Logo />

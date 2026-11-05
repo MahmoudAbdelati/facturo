@@ -2,7 +2,7 @@ import clsx from "clsx";
 
 const tones = {
   neutral: "bg-muted text-muted-foreground",
-  accent: "bg-accent-subtle text-accent",
+  accent: "bg-accent-subtle text-accent-subtle-foreground",
   success: "bg-success/10 text-success",
   warning: "bg-warning/10 text-warning",
   danger: "bg-danger/10 text-danger",

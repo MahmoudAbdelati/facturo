@@ -45,10 +45,10 @@ export function OverviewSkeleton() {
   return (
     <>
       <Skeleton className="mb-6 h-8 w-36" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCardsSkeleton />
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-8">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-8">
         <CashFlowChartSkeleton />
         <RecentInvoicesSkeleton />
       </div>

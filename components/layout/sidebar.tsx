@@ -16,7 +16,7 @@ export function Sidebar() {
         <Logo wordmarkClassName="sr-only lg:not-sr-only" />
       </Link>
 
-      <Link href="/invoices/new" title="New invoice" className={`${buttonClasses()} w-full px-0 lg:px-4`}>
+      <Link href="/invoices/new" title="New invoice" className={buttonClasses("soft", "rail")}>
         <Plus className="h-4 w-4" />
         <span className="sr-only lg:not-sr-only">New invoice</span>
       </Link>

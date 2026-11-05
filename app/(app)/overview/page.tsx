@@ -18,12 +18,12 @@ export default function OverviewPage() {
   return (
     <>
       <PageHeader title="Overview" />
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Suspense fallback={<KpiCardsSkeleton />}>
           <KpiCards />
         </Suspense>
       </div>
-      <div className="mt-4 grid gap-4 lg:grid-cols-8">
+      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-8">
         <Suspense fallback={<CashFlowChartSkeleton />}>
           <CashFlowChart />
         </Suspense>
