@@ -42,14 +42,23 @@ export async function InvoicesTable({ filters }: { filters: InvoiceFilters }) {
         ))}
       </ul>
 
-      <table className="hidden min-w-full text-sm md:table">
+      {/* Fixed layout: the columns never grow past the container, the client column
+          takes what is left and truncates. Widths are in rem so they follow the font size. */}
+      <table className="hidden w-full table-fixed text-sm md:table">
+        <colgroup>
+          <col className="w-36" />
+          <col />
+          <col className="w-32" />
+          <col className="w-28" />
+          <col className="w-12 xl:w-32" />
+        </colgroup>
         <thead className="border-b border-border text-left text-muted-foreground">
           <tr>
-            <th scope="col" className="px-4 py-3 font-medium">Invoice</th>
-            <th scope="col" className="px-4 py-3 font-medium">Client</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium">Amount</th>
-            <th scope="col" className="px-4 py-3 font-medium">Status</th>
-            <th scope="col" className="w-12 px-2 py-3">
+            <th scope="col" className="px-3 py-3 font-medium">Invoice</th>
+            <th scope="col" className="px-3 py-3 font-medium">Client</th>
+            <th scope="col" className="px-3 py-3 text-right font-medium">Amount</th>
+            <th scope="col" className="px-3 py-3 font-medium">Status</th>
+            <th scope="col" className="px-2 py-3">
               <span className="sr-only">Actions</span>
             </th>
           </tr>
@@ -57,23 +66,25 @@ export async function InvoicesTable({ filters }: { filters: InvoiceFilters }) {
         <tbody className="divide-y divide-border">
           {invoices.map((invoice) => (
             <tr key={invoice.id} className="hover:bg-muted/40">
-              <td className="whitespace-nowrap px-4 py-3">
-                <p className="font-mono">{invoice.number}</p>
-                <p className="text-xs text-muted-foreground">{formatDate(invoice.issue_date)}</p>
+              <td className="whitespace-nowrap px-3 py-3">
+                <p className="truncate font-mono">{invoice.number}</p>
+                <p className="truncate text-xs text-muted-foreground">
+                  {formatDate(invoice.issue_date)}
+                </p>
               </td>
-              <td className="px-4 py-3">
+              <td className="px-3 py-3">
                 <div className="flex items-center gap-3">
                   <Avatar name={invoice.client_name} />
-                  <div className="min-w-0 max-w-56">
+                  <div className="min-w-0">
                     <p className="truncate font-medium">{invoice.client_name}</p>
                     <p className="truncate text-xs text-muted-foreground">{invoice.client_email}</p>
                   </div>
                 </div>
               </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
+              <td className="truncate px-3 py-3 text-right font-mono tabular-nums">
                 {formatCurrency(invoice.total, invoice.currency)}
               </td>
-              <td className="whitespace-nowrap px-4 py-3">
+              <td className="whitespace-nowrap px-3 py-3">
                 <StatusBadge status={invoice.status} />
               </td>
               <td className="px-2 py-3">
