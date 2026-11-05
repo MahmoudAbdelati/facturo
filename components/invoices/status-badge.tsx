@@ -9,11 +9,12 @@ const styles: Record<DisplayStatus, { label: string; tone: BadgeTone; icon: type
   paid: { label: "Paid", tone: "success", icon: Check },
 };
 
-export function StatusBadge({ status }: { status: DisplayStatus }) {
+/** `compact` drops the icon, for tight rows; the label still says the status. */
+export function StatusBadge({ status, compact = false }: { status: DisplayStatus; compact?: boolean }) {
   const { label, tone, icon: Icon } = styles[status];
   return (
     <Badge tone={tone}>
-      <Icon className="h-3 w-3" />
+      {!compact && <Icon className="h-3 w-3" />}
       {label}
     </Badge>
   );

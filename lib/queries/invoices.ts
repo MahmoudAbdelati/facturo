@@ -56,11 +56,15 @@ function toRow(row: Record<string, unknown>): InvoiceRow {
   return { ...(row as InvoiceRow), total: Number(row.total) };
 }
 
+function orderBy(filters: InvoiceFilters) {
+  const sort = filters.sort && filters.sort in sortColumns ? filters.sort : "issue_date";
+  const dir = filters.dir === "asc" ? "ASC" : "DESC";
+  return sql`${sql.unsafe(sortColumns[sort])} ${sql.unsafe(dir)}, i.number DESC`;
+}
+
 /** One page of invoices matching the filters. Newest first unless a sort is given. */
 export function getInvoices(filters: InvoiceFilters = {}): Promise<InvoiceRow[]> {
   const page = Math.max(1, filters.page ?? 1);
-  const sort = filters.sort && filters.sort in sortColumns ? filters.sort : "issue_date";
-  const dir = filters.dir === "asc" ? "ASC" : "DESC";
 
   return withErrorMessage("Failed to load invoices.", async () => {
     const rows = await sql`
@@ -68,22 +72,24 @@ export function getInvoices(filters: InvoiceFilters = {}): Promise<InvoiceRow[]>
       FROM ${invoicesWithTotals()} i
       JOIN clients c ON c.id = i.client_id
       WHERE ${conditions(filters)}
-      ORDER BY ${sql.unsafe(sortColumns[sort])} ${sql.unsafe(dir)}, i.number DESC
+      ORDER BY ${orderBy(filters)}
       LIMIT ${INVOICES_PER_PAGE} OFFSET ${(page - 1) * INVOICES_PER_PAGE}`;
 
     return rows.map(toRow);
   });
 }
 
-export function getInvoicePageCount(filters: InvoiceFilters = {}): Promise<number> {
-  return withErrorMessage("Failed to count invoices.", async () => {
-    const [row] = await sql`
-      SELECT COUNT(*) AS count
-      FROM invoices i
+/** Every invoice matching the filters, in the list's order, for the CSV export. */
+export function getAllInvoices(filters: InvoiceFilters = {}): Promise<InvoiceRow[]> {
+  return withErrorMessage("Failed to export invoices.", async () => {
+    const rows = await sql`
+      SELECT ${invoiceColumns()}
+      FROM ${invoicesWithTotals()} i
       JOIN clients c ON c.id = i.client_id
-      WHERE ${conditions(filters)}`;
+      WHERE ${conditions(filters)}
+      ORDER BY ${orderBy(filters)}`;
 
-    return Math.ceil(Number(row.count) / INVOICES_PER_PAGE);
+    return rows.map(toRow);
   });
 }
 

@@ -18,6 +18,13 @@ export function formatDate(value: string | Date, locale = "en-US") {
   }).format(new Date(value));
 }
 
+/** "Nov 18": for tight spots where the year is obvious from context. */
+export function formatShortDate(value: string, locale = "en-US") {
+  return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", timeZone: "UTC" }).format(
+    new Date(value.slice(0, 10)),
+  );
+}
+
 export function initials(name: string) {
   return name
     .split(/\s+/)
