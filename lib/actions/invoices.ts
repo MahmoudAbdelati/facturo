@@ -3,22 +3,37 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { sql } from "@/lib/db";
+import { getNextInvoiceNumber } from "@/lib/queries/invoices";
+import { isUuid } from "@/lib/queries/shared";
 import type { InvoiceStatus } from "@/lib/types";
-import { invoiceSchema, type InvoiceFormState } from "@/lib/validations/invoice";
+import {
+  invoiceSchema,
+  invoiceStatusSchema,
+  invoiceUpdateSchema,
+  type InvoiceFormState,
+} from "@/lib/validations/invoice";
 
-function parseInvoice(formData: FormData) {
-  return invoiceSchema.safeParse({
-    clientId: formData.get("clientId"),
-    amount: formData.get("amount"),
-    status: formData.get("status"),
-  });
+const PAYMENT_TERMS_DAYS = 30;
+
+function isoDate(date: Date) {
+  return date.toISOString().slice(0, 10);
+}
+
+function revalidateInvoices() {
+  revalidatePath("/invoices");
+  revalidatePath("/overview");
+  revalidatePath("/clients");
 }
 
 export async function createInvoice(
   _prevState: InvoiceFormState,
   formData: FormData,
 ): Promise<InvoiceFormState> {
-  const parsed = parseInvoice(formData);
+  const parsed = invoiceSchema.safeParse({
+    clientId: formData.get("clientId"),
+    amount: formData.get("amount"),
+    status: formData.get("status"),
+  });
   if (!parsed.success) {
     return {
       errors: parsed.error.flatten().fieldErrors,
@@ -27,19 +42,28 @@ export async function createInvoice(
   }
 
   const { clientId, amount, status } = parsed.data;
-  const amountInCents = Math.round(amount * 100);
-  const date = new Date().toISOString().split("T")[0];
+  const today = new Date();
+  const issueDate = isoDate(today);
+  const dueDate = isoDate(new Date(today.getTime() + PAYMENT_TERMS_DAYS * 86_400_000));
 
   try {
-    await sql`
-      INSERT INTO invoices (customer_id, amount, status, date)
-      VALUES (${clientId}, ${amountInCents}, ${status}, ${date})`;
+    const number = await getNextInvoiceNumber();
+    await sql.begin(async (tx) => {
+      const [invoice] = await tx`
+        INSERT INTO invoices (number, client_id, issue_date, due_date, status, paid_at)
+        VALUES (${number}, ${clientId}, ${issueDate}, ${dueDate}, ${status},
+                ${status === "paid" ? issueDate : null})
+        RETURNING id`;
+      await tx`
+        INSERT INTO invoice_items (invoice_id, description, quantity, unit_price)
+        VALUES (${invoice.id}, 'Services', 1, ${Math.round(amount * 100)})`;
+    });
   } catch (error) {
     console.error(error);
     throw new Error("Failed to create invoice.");
   }
 
-  revalidatePath("/invoices");
+  revalidateInvoices();
   redirect("/invoices");
 }
 
@@ -48,7 +72,12 @@ export async function updateInvoice(
   _prevState: InvoiceFormState,
   formData: FormData,
 ): Promise<InvoiceFormState> {
-  const parsed = parseInvoice(formData);
+  if (!isUuid(id)) return { message: "That invoice doesn't exist." };
+
+  const parsed = invoiceUpdateSchema.safeParse({
+    clientId: formData.get("clientId"),
+    status: formData.get("status"),
+  });
   if (!parsed.success) {
     return {
       errors: parsed.error.flatten().fieldErrors,
@@ -56,32 +85,39 @@ export async function updateInvoice(
     };
   }
 
-  const { clientId, amount, status } = parsed.data;
-  const amountInCents = Math.round(amount * 100);
+  const { clientId, status } = parsed.data;
 
   try {
     await sql`
       UPDATE invoices
-      SET customer_id = ${clientId}, amount = ${amountInCents}, status = ${status}
+      SET client_id = ${clientId}, ${statusAssignment(status)}
       WHERE id = ${id}`;
   } catch (error) {
     console.error(error);
     throw new Error("Failed to update invoice.");
   }
 
-  revalidatePath("/invoices");
+  revalidateInvoices();
   redirect("/invoices");
 }
 
 export async function deleteInvoice(id: string) {
+  if (!isUuid(id)) return;
   await sql`DELETE FROM invoices WHERE id = ${id}`;
-  revalidatePath("/invoices");
+  revalidateInvoices();
 }
 
 export async function setInvoiceStatus(id: string, status: InvoiceStatus) {
-  // Server actions are public endpoints, so check the value at runtime too.
-  const parsedStatus = invoiceSchema.shape.status.parse(status);
-  await sql`UPDATE invoices SET status = ${parsedStatus} WHERE id = ${id}`;
-  revalidatePath("/invoices");
-  revalidatePath("/overview");
+  // Server actions are public endpoints, so check the values at runtime too.
+  if (!isUuid(id)) return;
+  const parsedStatus = invoiceStatusSchema.parse(status);
+  await sql`UPDATE invoices SET ${statusAssignment(parsedStatus)} WHERE id = ${id}`;
+  revalidateInvoices();
+}
+
+/** Keeps paid_at in step with the status: set on first payment, cleared otherwise. */
+function statusAssignment(status: InvoiceStatus) {
+  return status === "paid"
+    ? sql`status = 'paid', paid_at = COALESCE(paid_at, CURRENT_DATE)`
+    : sql`status = ${status}, paid_at = NULL`;
 }

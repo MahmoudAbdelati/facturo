@@ -1,13 +1,23 @@
 import clsx from "clsx";
-import { Check, Clock } from "lucide-react";
-import type { InvoiceStatus } from "@/lib/types";
+import { AlertCircle, Check, Clock, FilePen } from "lucide-react";
+import type { DisplayStatus } from "@/lib/types";
 
-const styles: Record<InvoiceStatus, { label: string; className: string; icon: typeof Check }> = {
+const styles: Record<DisplayStatus, { label: string; className: string; icon: typeof Check }> = {
+  draft: {
+    label: "Draft",
+    className: "bg-muted text-muted-foreground",
+    icon: FilePen,
+  },
+  sent: { label: "Sent", className: "bg-warning/10 text-warning", icon: Clock },
+  overdue: {
+    label: "Overdue",
+    className: "bg-danger/10 text-danger",
+    icon: AlertCircle,
+  },
   paid: { label: "Paid", className: "bg-success/10 text-success", icon: Check },
-  pending: { label: "Pending", className: "bg-warning/10 text-warning", icon: Clock },
 };
 
-export function StatusBadge({ status }: { status: InvoiceStatus }) {
+export function StatusBadge({ status }: { status: DisplayStatus }) {
   const { label, className, icon: Icon } = styles[status];
   return (
     <span

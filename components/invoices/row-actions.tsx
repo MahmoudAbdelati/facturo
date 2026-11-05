@@ -5,16 +5,16 @@ import Link from "next/link";
 import { CircleCheck, Clock, Pencil, Trash2 } from "lucide-react";
 import { DropdownMenu, menuItemClasses } from "@/components/ui/dropdown-menu";
 import { deleteInvoice, setInvoiceStatus } from "@/lib/actions/invoices";
-import type { InvoiceStatus } from "@/lib/types";
+import type { DisplayStatus } from "@/lib/types";
 
 const iconButton =
   "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
 
 // From lg up, edit and delete sit in the row; below lg they move into the menu.
-export function RowActions({ id, status }: { id: string; status: InvoiceStatus }) {
+export function RowActions({ id, status }: { id: string; status: DisplayStatus }) {
   const editHref = `/invoices/${id}/edit`;
   const remove = deleteInvoice.bind(null, id);
-  const nextStatus = status === "paid" ? "pending" : "paid";
+  const nextStatus = status === "paid" ? "sent" : "paid";
 
   return (
     <div className="flex items-center justify-end gap-0.5">
@@ -49,7 +49,7 @@ export function RowActions({ id, status }: { id: string; status: InvoiceStatus }
             ) : (
               <Clock className="h-4 w-4 text-muted-foreground" />
             )}
-            {nextStatus === "paid" ? "Mark as paid" : "Mark as pending"}
+            {nextStatus === "paid" ? "Mark as paid" : "Mark as unpaid"}
           </button>
         </form>
         <form action={remove} className="lg:hidden">

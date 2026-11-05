@@ -5,11 +5,13 @@ import { useActionState } from "react";
 import clsx from "clsx";
 import { DollarSign, UserRound } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
-import type { ClientOption, InvoiceFormData, InvoiceStatus } from "@/lib/types";
+import { formatCurrency } from "@/lib/format";
+import type { ClientOption, InvoiceStatus } from "@/lib/types";
 import type { InvoiceFormState } from "@/lib/validations/invoice";
 
 const statuses: { value: InvoiceStatus; label: string }[] = [
-  { value: "pending", label: "Pending" },
+  { value: "draft", label: "Draft" },
+  { value: "sent", label: "Sent" },
   { value: "paid", label: "Paid" },
 ];
 
@@ -23,11 +25,19 @@ export function InvoiceForm({
   submitLabel,
 }: {
   clients: ClientOption[];
-  invoice?: InvoiceFormData;
+  invoice?: {
+    client_id: string;
+    status: InvoiceStatus;
+    total: number;
+    currency: string;
+  };
   action: (state: InvoiceFormState, formData: FormData) => Promise<InvoiceFormState>;
   submitLabel: string;
 }) {
-  const [state, formAction, isPending] = useActionState(action, { message: null, errors: {} });
+  const [state, formAction, isPending] = useActionState(action, {
+    message: null,
+    errors: {},
+  });
 
   return (
     <form action={formAction} className="max-w-2xl">
@@ -41,7 +51,7 @@ export function InvoiceForm({
               id="client"
               name="clientId"
               className={clsx(fieldClasses, "cursor-pointer")}
-              defaultValue={invoice?.customer_id ?? ""}
+              defaultValue={invoice?.client_id ?? ""}
               aria-describedby="client-error"
             >
               <option value="" disabled>
@@ -62,19 +72,24 @@ export function InvoiceForm({
           <label htmlFor="amount" className="mb-2 block text-sm font-medium">
             Amount
           </label>
-          <div className="relative">
-            <input
-              id="amount"
-              name="amount"
-              type="number"
-              step="0.01"
-              defaultValue={invoice?.amount}
-              placeholder="0.00"
-              className={clsx(fieldClasses, "font-mono tabular-nums")}
-              aria-describedby="amount-error"
-            />
-            <DollarSign className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
+          {invoice ? (
+            <p id="amount" className="font-mono text-sm tabular-nums">
+              {formatCurrency(invoice.total, invoice.currency)}
+            </p>
+          ) : (
+            <div className="relative">
+              <input
+                id="amount"
+                name="amount"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                className={clsx(fieldClasses, "font-mono tabular-nums")}
+                aria-describedby="amount-error"
+              />
+              <DollarSign className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            </div>
+          )}
           <FieldErrors id="amount-error" errors={state.errors?.amount} />
         </div>
 
@@ -90,7 +105,7 @@ export function InvoiceForm({
                   type="radio"
                   name="status"
                   value={value}
-                  defaultChecked={invoice?.status === value}
+                  defaultChecked={(invoice?.status ?? "draft") === value}
                   className="h-4 w-4 border-input text-accent focus:ring-ring"
                   aria-describedby="status-error"
                 />

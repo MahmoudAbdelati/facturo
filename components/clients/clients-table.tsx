@@ -1,4 +1,5 @@
 import { Avatar } from "@/components/ui/avatar";
+import { formatCurrency } from "@/lib/format";
 import type { ClientRow } from "@/lib/types";
 
 export function ClientsTable({ clients }: { clients: ClientRow[] }) {
@@ -19,13 +20,15 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-3">
                 <p className="truncate text-sm font-medium">{client.name}</p>
-                <p className="shrink-0 font-mono text-sm tabular-nums">{client.total_pending}</p>
+                <p className="shrink-0 font-mono text-sm tabular-nums">
+                  {formatCurrency(client.outstanding)}
+                </p>
               </div>
               <div className="mt-1 flex items-baseline justify-between gap-3 text-xs text-muted-foreground">
                 <span className="truncate">
-                  {client.total_invoices} {client.total_invoices === 1 ? "invoice" : "invoices"}
+                  {client.invoice_count} {client.invoice_count === 1 ? "invoice" : "invoices"}
                   {" · "}
-                  <span className="font-mono tabular-nums">{client.total_paid}</span> paid
+                  <span className="font-mono tabular-nums">{formatCurrency(client.paid)}</span> paid
                 </span>
                 <span className="shrink-0">outstanding</span>
               </div>
@@ -56,13 +59,13 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
                 </div>
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
-                {client.total_invoices}
+                {client.invoice_count}
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
-                {client.total_pending}
+                {formatCurrency(client.outstanding)}
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
-                {client.total_paid}
+                {formatCurrency(client.paid)}
               </td>
             </tr>
           ))}

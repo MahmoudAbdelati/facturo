@@ -21,7 +21,7 @@ export default async function EditInvoicePage(props: { params: Promise<{ id: str
       <PageHeader title="Edit invoice" crumbs={[{ label: "Invoices", href: "/invoices" }]} />
       <InvoiceForm
         clients={clients}
-        invoice={invoice}
+        invoice={{ ...invoice, status: invoice.stored_status }}
         action={updateInvoice.bind(null, id)}
         submitLabel="Save changes"
       />

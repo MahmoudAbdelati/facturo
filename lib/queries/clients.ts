@@ -1,49 +1,82 @@
 import { sql } from "@/lib/db";
-import { formatCurrency } from "@/lib/format";
-import type { ClientOption, ClientRow } from "@/lib/types";
+import type { ClientDetail, ClientOption, ClientRow } from "@/lib/types";
+import { invoicesWithTotals, isUuid, withErrorMessage } from "./shared";
 
-export async function getClientOptions() {
-  try {
-    return await sql<ClientOption[]>`
-      SELECT id, name
-      FROM customers
-      ORDER BY name ASC`;
-  } catch (error) {
-    console.error("Database error:", error);
-    throw new Error("Failed to load clients.");
-  }
+export function getClientOptions(): Promise<ClientOption[]> {
+  return withErrorMessage("Failed to load clients.", async () => {
+    const rows = await sql`SELECT id, name FROM clients ORDER BY name ASC`;
+    return rows.map((row) => ({ id: row.id, name: row.name }));
+  });
 }
 
-export async function getClients(query: string) {
-  const pattern = `%${query}%`;
+function clientTotals() {
+  return sql`
+    c.id,
+    c.name,
+    c.company,
+    c.email,
+    c.country,
+    COUNT(i.id) FILTER (WHERE i.status <> 'draft') AS invoice_count,
+    COALESCE(SUM(i.total) FILTER (WHERE i.status = 'sent'), 0) AS outstanding,
+    COALESCE(SUM(i.total) FILTER (WHERE i.status = 'sent' AND i.due_date < CURRENT_DATE), 0) AS overdue,
+    COALESCE(SUM(i.total) FILTER (WHERE i.status = 'paid'), 0) AS paid,
+    MAX(i.issue_date) FILTER (WHERE i.status <> 'draft')::text AS last_issue_date`;
+}
 
-  try {
+function toRow(row: Record<string, unknown>): ClientRow {
+  return {
+    id: row.id as string,
+    name: row.name as string,
+    company: row.company as string | null,
+    email: row.email as string,
+    country: row.country as string | null,
+    invoice_count: Number(row.invoice_count),
+    outstanding: Number(row.outstanding),
+    overdue: Number(row.overdue),
+    paid: Number(row.paid),
+    last_issue_date: row.last_issue_date as string | null,
+  };
+}
+
+/** Clients matching the search, with invoice totals in cents. Drafts don't count. */
+export function getClients(query = ""): Promise<ClientRow[]> {
+  const pattern = `%${query.trim()}%`;
+
+  return withErrorMessage("Failed to load clients.", async () => {
     const rows = await sql`
-      SELECT
-        customers.id,
-        customers.name,
-        customers.email,
-        COUNT(invoices.id) AS total_invoices,
-        COALESCE(SUM(invoices.amount) FILTER (WHERE invoices.status = 'pending'), 0) AS total_pending,
-        COALESCE(SUM(invoices.amount) FILTER (WHERE invoices.status = 'paid'), 0) AS total_paid
-      FROM customers
-      LEFT JOIN invoices ON customers.id = invoices.customer_id
-      WHERE customers.name ILIKE ${pattern} OR customers.email ILIKE ${pattern}
-      GROUP BY customers.id, customers.name, customers.email
-      ORDER BY customers.name ASC`;
+      SELECT ${clientTotals()}
+      FROM clients c
+      LEFT JOIN ${invoicesWithTotals()} i ON i.client_id = c.id
+      WHERE c.name ILIKE ${pattern} OR c.company ILIKE ${pattern} OR c.email ILIKE ${pattern}
+      GROUP BY c.id
+      ORDER BY c.name ASC`;
 
-    return rows.map(
-      (row): ClientRow => ({
-        id: row.id,
-        name: row.name,
-        email: row.email,
-        total_invoices: Number(row.total_invoices),
-        total_pending: formatCurrency(Number(row.total_pending)),
-        total_paid: formatCurrency(Number(row.total_paid)),
-      }),
-    );
-  } catch (error) {
-    console.error("Database error:", error);
-    throw new Error("Failed to load clients.");
-  }
+    return rows.map(toRow);
+  });
+}
+
+export function getClient(id: string): Promise<ClientDetail | undefined> {
+  if (!isUuid(id)) return Promise.resolve(undefined);
+
+  return withErrorMessage("Failed to load client.", async () => {
+    const [row] = await sql`
+      SELECT
+        ${clientTotals()},
+        c.phone,
+        c.created_at::text AS created_at,
+        AVG(i.paid_at - i.issue_date)::float AS avg_days_to_pay
+      FROM clients c
+      LEFT JOIN ${invoicesWithTotals()} i ON i.client_id = c.id
+      WHERE c.id = ${id}
+      GROUP BY c.id`;
+
+    if (!row) return undefined;
+
+    return {
+      ...toRow(row),
+      phone: row.phone,
+      created_at: row.created_at,
+      avg_days_to_pay: row.avg_days_to_pay,
+    };
+  });
 }
