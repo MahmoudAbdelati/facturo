@@ -1,36 +1,65 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { PageHeader } from "@/components/layout/page-header";
+import { auth } from "@/auth";
 import { CashFlowChart } from "@/components/overview/cash-flow-chart";
 import { KpiCards } from "@/components/overview/kpi-cards";
-import { RecentInvoices } from "@/components/overview/recent-invoices";
+import { OverdueInvoices } from "@/components/overview/overdue-invoices";
+import { RecentActivity } from "@/components/overview/recent-activity";
+import { TopClients } from "@/components/overview/top-clients";
 import {
   CashFlowChartSkeleton,
   KpiCardsSkeleton,
-  RecentInvoicesSkeleton,
+  OverdueInvoicesSkeleton,
+  OverviewGrid,
+  RecentActivitySkeleton,
+  TopClientsSkeleton,
 } from "@/components/overview/skeletons";
 
 export const metadata: Metadata = {
   title: "Overview",
 };
 
-export default function OverviewPage() {
+export default async function OverviewPage() {
+  const session = await auth();
+  const firstName = session?.user?.name?.split(/\s+/)[0];
+
   return (
     <>
-      <PageHeader title="Overview" />
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Suspense fallback={<KpiCardsSkeleton />}>
-          <KpiCards />
-        </Suspense>
+      <div className="mb-6">
+        <h1 className="text-2xl font-semibold tracking-tight">
+          {firstName ? `Welcome back, ${firstName}` : "Overview"}
+        </h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Here&apos;s where your money stands today.
+        </p>
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-4 lg:grid-cols-8">
-        <Suspense fallback={<CashFlowChartSkeleton />}>
-          <CashFlowChart />
-        </Suspense>
-        <Suspense fallback={<RecentInvoicesSkeleton />}>
-          <RecentInvoices />
-        </Suspense>
-      </div>
+      <OverviewGrid
+        kpis={
+          <Suspense fallback={<KpiCardsSkeleton />}>
+            <KpiCards />
+          </Suspense>
+        }
+        chart={
+          <Suspense fallback={<CashFlowChartSkeleton />}>
+            <CashFlowChart />
+          </Suspense>
+        }
+        activity={
+          <Suspense fallback={<RecentActivitySkeleton />}>
+            <RecentActivity />
+          </Suspense>
+        }
+        topClients={
+          <Suspense fallback={<TopClientsSkeleton />}>
+            <TopClients />
+          </Suspense>
+        }
+        overdue={
+          <Suspense fallback={<OverdueInvoicesSkeleton />}>
+            <OverdueInvoices />
+          </Suspense>
+        }
+      />
     </>
   );
 }

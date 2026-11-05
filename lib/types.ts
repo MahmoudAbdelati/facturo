@@ -96,6 +96,15 @@ export type ActivityEvent = {
   total: number;
 };
 
+export type OverdueInvoice = {
+  id: string;
+  number: string;
+  client_name: string;
+  due_date: string;
+  days_overdue: number;
+  total: number;
+};
+
 export type TopClient = {
   id: string;
   name: string;

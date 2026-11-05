@@ -1,5 +1,5 @@
 import { sql } from "@/lib/db";
-import type { ActivityEvent, CashFlowMonth, Kpis, TopClient } from "@/lib/types";
+import type { ActivityEvent, CashFlowMonth, Kpis, OverdueInvoice, TopClient } from "@/lib/types";
 import { invoicesWithTotals, withErrorMessage } from "./shared";
 
 /**
@@ -111,6 +111,34 @@ export function getRecentActivity(limit = 6): Promise<ActivityEvent[]> {
       invoice_id: row.invoice_id,
       number: row.number,
       client_name: row.client_name,
+      total: Number(row.total),
+    }));
+  });
+}
+
+/** Sent invoices past their due date, longest overdue first. */
+export function getOverdueInvoices(limit = 5): Promise<OverdueInvoice[]> {
+  return withErrorMessage("Failed to load overdue invoices.", async () => {
+    const rows = await sql`
+      SELECT
+        i.id,
+        i.number,
+        clients.name AS client_name,
+        i.due_date::text AS due_date,
+        (CURRENT_DATE - i.due_date) AS days_overdue,
+        i.total
+      FROM ${invoicesWithTotals()} i
+      JOIN clients ON clients.id = i.client_id
+      WHERE i.status = 'sent' AND i.due_date < CURRENT_DATE
+      ORDER BY i.due_date, i.number
+      LIMIT ${limit}`;
+
+    return rows.map((row) => ({
+      id: row.id,
+      number: row.number,
+      client_name: row.client_name,
+      due_date: row.due_date,
+      days_overdue: Number(row.days_overdue),
       total: Number(row.total),
     }));
   });
