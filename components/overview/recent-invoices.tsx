@@ -1,4 +1,5 @@
 import { Avatar } from "@/components/ui/avatar";
+import { Card, CardHeader } from "@/components/ui/card";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { getRecentActivity } from "@/lib/queries/overview";
 
@@ -6,9 +7,9 @@ export async function RecentInvoices() {
   const events = await getRecentActivity(5);
 
   return (
-    <section className="rounded-lg border border-border bg-surface p-5 lg:col-span-3">
-      <h2 className="text-sm font-medium">Recent activity</h2>
-      <ul className="mt-4 divide-y divide-border">
+    <Card className="lg:col-span-3">
+      <CardHeader title="Recent activity" />
+      <ul className="mt-2 divide-y divide-border px-5 pb-2">
         {events.map((event) => (
           <li
             key={`${event.type}-${event.invoice_id}`}
@@ -28,6 +29,6 @@ export async function RecentInvoices() {
           </li>
         ))}
       </ul>
-    </section>
+    </Card>
   );
 }

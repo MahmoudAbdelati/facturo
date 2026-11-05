@@ -1,18 +1,29 @@
+import { UserSearch } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { formatCurrency } from "@/lib/format";
 import type { ClientRow } from "@/lib/types";
 
 export function ClientsTable({ clients }: { clients: ClientRow[] }) {
   if (clients.length === 0) {
     return (
-      <p className="rounded-lg border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-        No clients match your search.
-      </p>
+      <Card>
+        <EmptyState icon={UserSearch} title="No clients found" description="Try a different search." />
+      </Card>
     );
   }
 
   return (
-    <div className="overflow-x-auto rounded-lg border border-border bg-surface">
+    <Card className="overflow-hidden">
       <ul className="divide-y divide-border md:hidden">
         {clients.map((client) => (
           <li key={client.id} className="flex items-center gap-3 px-4 py-3">
@@ -37,40 +48,47 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
         ))}
       </ul>
 
-      <table className="hidden min-w-full text-sm md:table">
-        <thead className="border-b border-border text-left text-muted-foreground">
+      {/* Fixed layout like the invoices table: the client column truncates, nothing scrolls sideways. */}
+      <Table className="hidden table-fixed md:table">
+        <colgroup>
+          <col />
+          <col className="w-24" />
+          <col className="w-32 lg:w-36" />
+          <col className="w-32 lg:w-36" />
+        </colgroup>
+        <TableHead>
           <tr>
-            <th scope="col" className="px-4 py-3 font-medium">Client</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium">Invoices</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium">Outstanding</th>
-            <th scope="col" className="px-4 py-3 text-right font-medium">Paid</th>
+            <TableHeader className="px-4">Client</TableHeader>
+            <TableHeader className="px-4 text-right">Invoices</TableHeader>
+            <TableHeader className="px-4 text-right">Outstanding</TableHeader>
+            <TableHeader className="px-4 text-right">Paid</TableHeader>
           </tr>
-        </thead>
-        <tbody className="divide-y divide-border">
+        </TableHead>
+        <TableBody>
           {clients.map((client) => (
-            <tr key={client.id} className="hover:bg-muted/40">
-              <td className="px-4 py-3">
+            <TableRow key={client.id}>
+              <TableCell className="px-4">
                 <div className="flex items-center gap-3">
                   <Avatar name={client.name} />
-                  <div className="min-w-0 max-w-64">
+                  <div className="min-w-0">
                     <p className="truncate font-medium">{client.name}</p>
                     <p className="truncate text-xs text-muted-foreground">{client.email}</p>
                   </div>
                 </div>
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right tabular-nums">
+              </TableCell>
+              <TableCell className="truncate px-4 text-right tabular-nums">
                 {client.invoice_count}
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
+              </TableCell>
+              <TableCell className="truncate px-4 text-right font-mono tabular-nums">
                 {formatCurrency(client.outstanding)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
+              </TableCell>
+              <TableCell className="truncate px-4 text-right font-mono tabular-nums">
                 {formatCurrency(client.paid)}
-              </td>
-            </tr>
+              </TableCell>
+            </TableRow>
           ))}
-        </tbody>
-      </table>
-    </div>
+        </TableBody>
+      </Table>
+    </Card>
   );
 }

@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import clsx from "clsx";
 import { DollarSign, UserRound } from "lucide-react";
 import { Button, buttonClasses } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { FieldError, Input, Label, Select } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/format";
 import type { ClientOption, InvoiceStatus } from "@/lib/types";
 import type { InvoiceFormState } from "@/lib/validations/invoice";
@@ -14,9 +15,6 @@ const statuses: { value: InvoiceStatus; label: string }[] = [
   { value: "sent", label: "Sent" },
   { value: "paid", label: "Paid" },
 ];
-
-const fieldClasses =
-  "peer block h-10 w-full rounded-lg border border-input bg-background pl-10 text-sm placeholder:text-muted-foreground";
 
 export function InvoiceForm({
   clients,
@@ -41,56 +39,49 @@ export function InvoiceForm({
 
   return (
     <form action={formAction} className="max-w-2xl">
-      <div className="space-y-5 rounded-lg border border-border bg-surface p-5 md:p-6">
+      <Card className="space-y-5 p-5 md:p-6">
         <div>
-          <label htmlFor="client" className="mb-2 block text-sm font-medium">
-            Client
-          </label>
-          <div className="relative">
-            <select
-              id="client"
-              name="clientId"
-              className={clsx(fieldClasses, "cursor-pointer")}
-              defaultValue={invoice?.client_id ?? ""}
-              aria-describedby="client-error"
-            >
-              <option value="" disabled>
-                Choose a client
+          <Label htmlFor="client">Client</Label>
+          <Select
+            id="client"
+            name="clientId"
+            icon={UserRound}
+            defaultValue={invoice?.client_id ?? ""}
+            aria-describedby="client-error"
+            aria-invalid={!!state.errors?.clientId}
+          >
+            <option value="" disabled>
+              Choose a client
+            </option>
+            {clients.map((client) => (
+              <option key={client.id} value={client.id}>
+                {client.name}
               </option>
-              {clients.map((client) => (
-                <option key={client.id} value={client.id}>
-                  {client.name}
-                </option>
-              ))}
-            </select>
-            <UserRound className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          </div>
-          <FieldErrors id="client-error" errors={state.errors?.clientId} />
+            ))}
+          </Select>
+          <FieldError id="client-error" errors={state.errors?.clientId} />
         </div>
 
         <div>
-          <label htmlFor="amount" className="mb-2 block text-sm font-medium">
-            Amount
-          </label>
+          <Label htmlFor="amount">Amount</Label>
           {invoice ? (
             <p id="amount" className="font-mono text-sm tabular-nums">
               {formatCurrency(invoice.total, invoice.currency)}
             </p>
           ) : (
-            <div className="relative">
-              <input
-                id="amount"
-                name="amount"
-                type="number"
-                step="0.01"
-                placeholder="0.00"
-                className={clsx(fieldClasses, "font-mono tabular-nums")}
-                aria-describedby="amount-error"
-              />
-              <DollarSign className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            </div>
+            <Input
+              id="amount"
+              name="amount"
+              type="number"
+              step="0.01"
+              placeholder="0.00"
+              icon={DollarSign}
+              className="font-mono tabular-nums"
+              aria-describedby="amount-error"
+              aria-invalid={!!state.errors?.amount}
+            />
           )}
-          <FieldErrors id="amount-error" errors={state.errors?.amount} />
+          <FieldError id="amount-error" errors={state.errors?.amount} />
         </div>
 
         <fieldset>
@@ -113,7 +104,7 @@ export function InvoiceForm({
               </label>
             ))}
           </div>
-          <FieldErrors id="status-error" errors={state.errors?.status} />
+          <FieldError id="status-error" errors={state.errors?.status} />
         </fieldset>
 
         {state.message && (
@@ -121,7 +112,7 @@ export function InvoiceForm({
             {state.message}
           </p>
         )}
-      </div>
+      </Card>
 
       <div className="mt-6 flex justify-end gap-3">
         <Link href="/invoices" className={buttonClasses("secondary")}>
@@ -132,17 +123,5 @@ export function InvoiceForm({
         </Button>
       </div>
     </form>
-  );
-}
-
-function FieldErrors({ id, errors }: { id: string; errors?: string[] }) {
-  return (
-    <div id={id} aria-live="polite" aria-atomic="true">
-      {errors?.map((error) => (
-        <p key={error} className="mt-2 text-sm text-danger">
-          {error}
-        </p>
-      ))}
-    </div>
   );
 }

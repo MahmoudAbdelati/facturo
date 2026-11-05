@@ -1,4 +1,5 @@
 import { AlertCircle, Banknote, Clock, Timer } from "lucide-react";
+import { Card } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import { getKpis } from "@/lib/queries/overview";
 import type { Kpi } from "@/lib/types";
@@ -34,7 +35,7 @@ function KpiCard({
     : null;
 
   return (
-    <div className="rounded-lg border border-border bg-surface p-5">
+    <Card className="p-5">
       <div className="flex items-center justify-between text-sm text-muted-foreground">
         <span>{label}</span>
         <Icon className="h-4 w-4" />
@@ -47,6 +48,6 @@ function KpiCard({
           ? "No data for the 30 days before"
           : `${change > 0 ? "+" : ""}${change}% vs previous 30 days`}
       </p>
-    </div>
+    </Card>
   );
 }

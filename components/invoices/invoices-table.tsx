@@ -1,4 +1,7 @@
+import { FileSearch } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { Card } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import { RowActions } from "@/components/invoices/row-actions";
 import { StatusBadge } from "@/components/invoices/status-badge";
 import { formatCurrency, formatDate } from "@/lib/format";
@@ -10,9 +13,13 @@ export async function InvoicesTable({ filters }: { filters: InvoiceFilters }) {
 
   if (invoices.length === 0) {
     return (
-      <p className="rounded-lg border border-border bg-surface p-8 text-center text-sm text-muted-foreground">
-        No invoices match your search.
-      </p>
+      <Card>
+        <EmptyState
+          icon={FileSearch}
+          title="No invoices found"
+          description="Try a different search or clear the filters."
+        />
+      </Card>
     );
   }
 

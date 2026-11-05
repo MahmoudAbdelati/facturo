@@ -54,7 +54,7 @@ export function LoginForm() {
         </div>
       </div>
       <input type="hidden" name="redirectTo" value={callbackUrl} />
-      <Button className="w-full" aria-disabled={isPending}>
+      <Button type="submit" className="w-full" aria-disabled={isPending}>
         Log in <ArrowRight className="h-4 w-4" />
       </Button>
       <div className="flex min-h-5 items-center gap-1.5" aria-live="polite" aria-atomic="true">

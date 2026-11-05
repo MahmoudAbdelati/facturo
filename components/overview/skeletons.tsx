@@ -1,13 +1,14 @@
+import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export function KpiCardsSkeleton() {
   return (
     <>
       {Array.from({ length: 4 }, (_, i) => (
-        <div key={i} className="rounded-lg border border-border bg-surface p-5">
+        <Card key={i} className="p-5">
           <Skeleton className="h-4 w-20" />
           <Skeleton className="mt-4 h-7 w-28" />
-        </div>
+        </Card>
       ))}
     </>
   );
@@ -15,17 +16,17 @@ export function KpiCardsSkeleton() {
 
 export function CashFlowChartSkeleton() {
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 lg:col-span-5">
+    <Card className="p-5 lg:col-span-5">
       <Skeleton className="h-4 w-24" />
       <Skeleton className="mt-2 h-4 w-28" />
       <Skeleton className="mt-6 h-[264px] w-full" />
-    </div>
+    </Card>
   );
 }
 
 export function RecentInvoicesSkeleton() {
   return (
-    <div className="rounded-lg border border-border bg-surface p-5 lg:col-span-3">
+    <Card className="p-5 lg:col-span-3">
       <Skeleton className="h-4 w-32" />
       <div className="mt-4 space-y-5">
         {Array.from({ length: 5 }, (_, i) => (
@@ -36,7 +37,7 @@ export function RecentInvoicesSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
 

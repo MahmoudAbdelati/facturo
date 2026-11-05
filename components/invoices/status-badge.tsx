@@ -1,33 +1,20 @@
-import clsx from "clsx";
 import { AlertCircle, Check, Clock, FilePen } from "lucide-react";
+import { Badge, type BadgeTone } from "@/components/ui/badge";
 import type { DisplayStatus } from "@/lib/types";
 
-const styles: Record<DisplayStatus, { label: string; className: string; icon: typeof Check }> = {
-  draft: {
-    label: "Draft",
-    className: "bg-muted text-muted-foreground",
-    icon: FilePen,
-  },
-  sent: { label: "Sent", className: "bg-warning/10 text-warning", icon: Clock },
-  overdue: {
-    label: "Overdue",
-    className: "bg-danger/10 text-danger",
-    icon: AlertCircle,
-  },
-  paid: { label: "Paid", className: "bg-success/10 text-success", icon: Check },
+const styles: Record<DisplayStatus, { label: string; tone: BadgeTone; icon: typeof Check }> = {
+  draft: { label: "Draft", tone: "neutral", icon: FilePen },
+  sent: { label: "Sent", tone: "warning", icon: Clock },
+  overdue: { label: "Overdue", tone: "danger", icon: AlertCircle },
+  paid: { label: "Paid", tone: "success", icon: Check },
 };
 
 export function StatusBadge({ status }: { status: DisplayStatus }) {
-  const { label, className, icon: Icon } = styles[status];
+  const { label, tone, icon: Icon } = styles[status];
   return (
-    <span
-      className={clsx(
-        "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-        className,
-      )}
-    >
+    <Badge tone={tone}>
       <Icon className="h-3 w-3" />
       {label}
-    </span>
+    </Badge>
   );
 }
