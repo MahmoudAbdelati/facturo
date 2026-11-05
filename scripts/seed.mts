@@ -35,7 +35,7 @@ function mulberry32(seed: number) {
 
 const rand = mulberry32(20261105);
 const int = (min: number, max: number) => Math.floor(rand() * (max - min + 1)) + min;
-const pick = <T>(items: readonly T[]) => items[Math.floor(rand() * items.length)];
+const pick = <T,>(items: readonly T[]) => items[Math.floor(rand() * items.length)];
 const chance = (p: number) => rand() < p;
 
 const DAY = 86_400_000;
