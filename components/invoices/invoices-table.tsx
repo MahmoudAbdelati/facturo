@@ -48,7 +48,6 @@ export async function InvoicesTable({ filters }: { filters: InvoiceFilters }) {
             <th scope="col" className="px-4 py-3 font-medium">Invoice</th>
             <th scope="col" className="px-4 py-3 font-medium">Client</th>
             <th scope="col" className="px-4 py-3 text-right font-medium">Amount</th>
-            <th scope="col" className="px-4 py-3 font-medium">Issued</th>
             <th scope="col" className="px-4 py-3 font-medium">Status</th>
             <th scope="col" className="w-12 px-2 py-3">
               <span className="sr-only">Actions</span>
@@ -58,8 +57,9 @@ export async function InvoicesTable({ filters }: { filters: InvoiceFilters }) {
         <tbody className="divide-y divide-border">
           {invoices.map((invoice) => (
             <tr key={invoice.id} className="hover:bg-muted/40">
-              <td className="whitespace-nowrap px-4 py-3 font-mono text-muted-foreground">
-                {invoice.number}
+              <td className="whitespace-nowrap px-4 py-3">
+                <p className="font-mono">{invoice.number}</p>
+                <p className="text-xs text-muted-foreground">{formatDate(invoice.issue_date)}</p>
               </td>
               <td className="px-4 py-3">
                 <div className="flex items-center gap-3">
@@ -72,9 +72,6 @@ export async function InvoicesTable({ filters }: { filters: InvoiceFilters }) {
               </td>
               <td className="whitespace-nowrap px-4 py-3 text-right font-mono tabular-nums">
                 {formatCurrency(invoice.total, invoice.currency)}
-              </td>
-              <td className="whitespace-nowrap px-4 py-3 text-muted-foreground">
-                {formatDate(invoice.issue_date)}
               </td>
               <td className="whitespace-nowrap px-4 py-3">
                 <StatusBadge status={invoice.status} />
