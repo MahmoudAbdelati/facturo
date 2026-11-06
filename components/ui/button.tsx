@@ -8,6 +8,8 @@ const variants = {
   soft: "bg-accent/10 text-accent-subtle-foreground ring-1 ring-inset ring-accent/25 hover:bg-accent hover:text-accent-foreground dark:bg-accent-subtle dark:ring-0 dark:hover:bg-accent",
   ghost: "text-muted-foreground hover:bg-muted hover:text-foreground",
   danger: "bg-danger text-white hover:bg-danger/90",
+  /** Tinted danger: opens a destructive flow (the confirm step uses solid `danger`). */
+  "danger-soft": "bg-danger/10 text-danger hover:bg-danger/15 dark:hover:bg-danger/20",
 } as const;
 
 const sizes = {

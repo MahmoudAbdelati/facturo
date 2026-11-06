@@ -6,9 +6,13 @@ import { updateInvoice } from "@/lib/actions/invoices";
 import { getClientOptions } from "@/lib/queries/clients";
 import { getInvoice } from "@/lib/queries/invoices";
 
-export const metadata: Metadata = {
-  title: "Edit invoice",
-};
+export async function generateMetadata(props: {
+  params: Promise<{ id: string }>;
+}): Promise<Metadata> {
+  const { id } = await props.params;
+  const invoice = await getInvoice(id);
+  return { title: invoice ? `Edit ${invoice.number}` : "Invoice not found" };
+}
 
 export default async function EditInvoicePage(props: { params: Promise<{ id: string }> }) {
   const { id } = await props.params;
@@ -18,12 +22,20 @@ export default async function EditInvoicePage(props: { params: Promise<{ id: str
 
   return (
     <>
-      <PageHeader title="Edit invoice" crumbs={[{ label: "Invoices", href: "/invoices" }]} />
+      <PageHeader
+        title={`Edit ${invoice.number}`}
+        crumbs={[{ label: "Invoices", href: "/invoices" }]}
+      />
       <InvoiceForm
         clients={clients}
-        invoice={{ ...invoice, status: invoice.stored_status }}
+        invoice={invoice}
+        defaults={{
+          number: invoice.number,
+          currency: invoice.currency,
+          issueDate: invoice.issue_date,
+          dueDate: invoice.due_date,
+        }}
         action={updateInvoice.bind(null, id)}
-        submitLabel="Save changes"
       />
     </>
   );

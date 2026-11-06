@@ -13,7 +13,7 @@ function LeadingIcon({ icon: Icon }: { icon?: Icon }) {
   );
 }
 
-interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface InputProps extends React.ComponentProps<"input"> {
   icon?: Icon;
 }
 
@@ -50,8 +50,22 @@ export function Textarea({ className, ...rest }: React.TextareaHTMLAttributes<HT
   return <textarea rows={3} {...rest} className={clsx(fieldClasses, "py-2", className)} />;
 }
 
-export function Label({ className, ...rest }: React.LabelHTMLAttributes<HTMLLabelElement>) {
-  return <label {...rest} className={clsx("mb-2 block text-sm font-medium", className)} />;
+interface LabelProps extends React.LabelHTMLAttributes<HTMLLabelElement> {
+  /** Smaller and muted, so the value in the field reads first. Used in data-entry forms. */
+  quiet?: boolean;
+}
+
+export function Label({ quiet, className, ...rest }: LabelProps) {
+  return (
+    <label
+      {...rest}
+      className={clsx(
+        "block font-medium",
+        quiet ? "mb-1.5 text-xs text-muted-foreground" : "mb-2 text-sm",
+        className,
+      )}
+    />
+  );
 }
 
 /** Validation messages under a field; point the field's aria-describedby at `id`. */

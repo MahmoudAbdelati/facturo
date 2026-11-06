@@ -1,23 +1,21 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
+import type { TransactionSql } from "postgres";
 import { sql } from "@/lib/db";
 import { getNextInvoiceNumber } from "@/lib/queries/invoices";
 import { isUuid } from "@/lib/queries/shared";
 import type { InvoiceStatus } from "@/lib/types";
 import {
+  invoiceErrors,
+  invoiceFromFormData,
   invoiceSchema,
   invoiceStatusSchema,
-  invoiceUpdateSchema,
+  type InvoiceInput,
   type InvoiceFormState,
 } from "@/lib/validations/invoice";
 
-const PAYMENT_TERMS_DAYS = 30;
-
-function isoDate(date: Date) {
-  return date.toISOString().slice(0, 10);
-}
+type Tx = TransactionSql;
 
 function revalidateInvoices() {
   revalidatePath("/invoices");
@@ -25,46 +23,58 @@ function revalidateInvoices() {
   revalidatePath("/clients");
 }
 
+function isUniqueViolation(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "23505";
+}
+
+async function insertItems(tx: Tx, invoiceId: string, items: InvoiceInput["items"]) {
+  const rows = items.map((item, position) => ({
+    invoice_id: invoiceId,
+    description: item.description,
+    quantity: item.quantity,
+    unit_price: item.unitPrice,
+    position,
+  }));
+  await tx`INSERT INTO invoice_items ${tx(rows)}`;
+}
+
+/** A paid invoice can't have been paid before it was issued. */
+function paidAt(tx: Tx, input: InvoiceInput) {
+  return input.status === "paid" ? tx`GREATEST(${input.issueDate}::date, CURRENT_DATE)` : null;
+}
+
 export async function createInvoice(
   _prevState: InvoiceFormState,
   formData: FormData,
 ): Promise<InvoiceFormState> {
-  const parsed = invoiceSchema.safeParse({
-    clientId: formData.get("clientId"),
-    amount: formData.get("amount"),
-    status: formData.get("status"),
-  });
-  if (!parsed.success) {
-    return {
-      errors: parsed.error.flatten().fieldErrors,
-      message: "Some fields need attention.",
-    };
+  const parsed = invoiceSchema.safeParse(invoiceFromFormData(formData));
+  if (!parsed.success) return invoiceErrors(parsed.error);
+
+  const input = parsed.data;
+
+  // Two invoices saved at once can pick the same number; the second one tries the next.
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const number = await getNextInvoiceNumber();
+      const id = await sql.begin(async (tx) => {
+        const [invoice] = await tx`
+          INSERT INTO invoices (number, client_id, issue_date, due_date, status, currency, notes, paid_at)
+          VALUES (${number}, ${input.clientId}, ${input.issueDate}, ${input.dueDate}, ${input.status},
+                  ${input.currency}, ${input.notes}, ${paidAt(tx, input)})
+          RETURNING id`;
+        await insertItems(tx, invoice.id, input.items);
+        return invoice.id as string;
+      });
+
+      revalidateInvoices();
+      return { status: "success", invoice: { id, number } };
+    } catch (error) {
+      if (isUniqueViolation(error) && attempt < 2) continue;
+      console.error(error);
+      return { status: "error", message: "We couldn't save the invoice. Please try again." };
+    }
   }
-
-  const { clientId, amount, status } = parsed.data;
-  const today = new Date();
-  const issueDate = isoDate(today);
-  const dueDate = isoDate(new Date(today.getTime() + PAYMENT_TERMS_DAYS * 86_400_000));
-
-  try {
-    const number = await getNextInvoiceNumber();
-    await sql.begin(async (tx) => {
-      const [invoice] = await tx`
-        INSERT INTO invoices (number, client_id, issue_date, due_date, status, paid_at)
-        VALUES (${number}, ${clientId}, ${issueDate}, ${dueDate}, ${status},
-                ${status === "paid" ? issueDate : null})
-        RETURNING id`;
-      await tx`
-        INSERT INTO invoice_items (invoice_id, description, quantity, unit_price)
-        VALUES (${invoice.id}, 'Services', 1, ${Math.round(amount * 100)})`;
-    });
-  } catch (error) {
-    console.error(error);
-    throw new Error("Failed to create invoice.");
-  }
-
-  revalidateInvoices();
-  redirect("/invoices");
+  return { status: "error", message: "We couldn't save the invoice. Please try again." };
 }
 
 export async function updateInvoice(
@@ -72,52 +82,78 @@ export async function updateInvoice(
   _prevState: InvoiceFormState,
   formData: FormData,
 ): Promise<InvoiceFormState> {
-  if (!isUuid(id)) return { message: "That invoice doesn't exist." };
+  if (!isUuid(id)) return { status: "error", message: "That invoice doesn't exist." };
 
-  const parsed = invoiceUpdateSchema.safeParse({
-    clientId: formData.get("clientId"),
-    status: formData.get("status"),
-  });
-  if (!parsed.success) {
-    return {
-      errors: parsed.error.flatten().fieldErrors,
-      message: "Some fields need attention.",
-    };
-  }
+  const parsed = invoiceSchema.safeParse(invoiceFromFormData(formData));
+  if (!parsed.success) return invoiceErrors(parsed.error);
 
-  const { clientId, status } = parsed.data;
+  const input = parsed.data;
 
   try {
-    await sql`
-      UPDATE invoices
-      SET client_id = ${clientId}, ${statusAssignment(status)}
-      WHERE id = ${id}`;
+    const number = await sql.begin(async (tx) => {
+      // A paid invoice keeps the day it was paid, unless that was before the new issue date.
+      const [invoice] = await tx`
+        UPDATE invoices
+        SET client_id  = ${input.clientId},
+            issue_date = ${input.issueDate},
+            due_date   = ${input.dueDate},
+            status     = ${input.status},
+            currency   = ${input.currency},
+            notes      = ${input.notes},
+            paid_at    = ${
+              input.status === "paid"
+                ? tx`GREATEST(${input.issueDate}::date, COALESCE(paid_at, CURRENT_DATE))`
+                : null
+            }
+        WHERE id = ${id}
+        RETURNING number`;
+      if (!invoice) return null;
+
+      await tx`DELETE FROM invoice_items WHERE invoice_id = ${id}`;
+      await insertItems(tx, id, input.items);
+      return invoice.number as string;
+    });
+
+    if (!number) return { status: "error", message: "That invoice doesn't exist any more." };
+
+    revalidateInvoices();
+    return { status: "success", invoice: { id, number } };
   } catch (error) {
     console.error(error);
-    throw new Error("Failed to update invoice.");
+    return { status: "error", message: "We couldn't save your changes. Please try again." };
   }
-
-  revalidateInvoices();
-  redirect("/invoices");
 }
 
-export async function deleteInvoice(id: string) {
-  if (!isUuid(id)) return;
-  await sql`DELETE FROM invoices WHERE id = ${id}`;
+export async function deleteInvoice(id: string): Promise<{ ok: boolean }> {
+  if (!isUuid(id)) return { ok: false };
+  try {
+    await sql`DELETE FROM invoices WHERE id = ${id}`;
+  } catch (error) {
+    console.error(error);
+    return { ok: false };
+  }
   revalidateInvoices();
+  return { ok: true };
 }
 
-export async function setInvoiceStatus(id: string, status: InvoiceStatus) {
+export async function setInvoiceStatus(id: string, status: InvoiceStatus): Promise<{ ok: boolean }> {
   // Server actions are public endpoints, so check the values at runtime too.
-  if (!isUuid(id)) return;
-  const parsedStatus = invoiceStatusSchema.parse(status);
-  await sql`UPDATE invoices SET ${statusAssignment(parsedStatus)} WHERE id = ${id}`;
+  if (!isUuid(id)) return { ok: false };
+  const parsedStatus = invoiceStatusSchema.safeParse(status);
+  if (!parsedStatus.success) return { ok: false };
+  try {
+    await sql`UPDATE invoices SET ${statusAssignment(parsedStatus.data)} WHERE id = ${id}`;
+  } catch (error) {
+    console.error(error);
+    return { ok: false };
+  }
   revalidateInvoices();
+  return { ok: true };
 }
 
 /** Keeps paid_at in step with the status: set on first payment, cleared otherwise. */
 function statusAssignment(status: InvoiceStatus) {
   return status === "paid"
-    ? sql`status = 'paid', paid_at = COALESCE(paid_at, CURRENT_DATE)`
+    ? sql`status = 'paid', paid_at = COALESCE(paid_at, GREATEST(issue_date, CURRENT_DATE))`
     : sql`status = ${status}, paid_at = NULL`;
 }

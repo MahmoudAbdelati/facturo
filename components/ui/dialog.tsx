@@ -1,5 +1,6 @@
 "use client";
 
+import clsx from "clsx";
 import { useEffect, useId, useRef } from "react";
 import { X } from "lucide-react";
 
@@ -14,6 +15,7 @@ export function Dialog({
   description,
   children,
   footer,
+  placement = "center",
 }: {
   open: boolean;
   onClose: () => void;
@@ -21,6 +23,8 @@ export function Dialog({
   description?: React.ReactNode;
   children?: React.ReactNode;
   footer?: React.ReactNode;
+  /** "bottom" is a sheet pinned to the bottom edge, for phones. */
+  placement?: "center" | "bottom";
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -43,9 +47,14 @@ export function Dialog({
       onClick={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
-      className="w-[calc(100%-2rem)] max-w-md rounded-xl border border-border bg-surface-raised p-0 text-foreground shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm"
+      className={clsx(
+        "border border-border bg-surface-raised p-0 text-foreground shadow-xl backdrop:bg-black/50 backdrop:backdrop-blur-sm",
+        placement === "bottom"
+          ? "mb-0 mt-auto max-h-[85dvh] w-full max-w-none rounded-t-2xl border-b-0 motion-safe:animate-[sheet-in_200ms_ease-out]"
+          : "w-[calc(100%-2rem)] max-w-md rounded-xl",
+      )}
     >
-      <div className="p-6">
+      <div className={placement === "bottom" ? "p-5 pb-[max(1.25rem,env(safe-area-inset-bottom))]" : "p-6"}>
         <div className="flex items-start justify-between gap-4">
           <h2 id={titleId} className="text-base font-semibold">
             {title}
