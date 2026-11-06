@@ -3,13 +3,14 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { Plus } from "lucide-react";
-import { appNav, useIsActive } from "@/components/layout/nav-links";
+import { appNav, useIsActive, useNewInvoiceHref } from "@/components/layout/nav-links";
 
 const [overview, invoices, clients] = appNav;
 
 // Bottom tab bar on phones, with "New invoice" in the middle.
 export function MobileNav() {
   const isActive = useIsActive();
+  const newInvoiceHref = useNewInvoiceHref();
 
   const tab = ({ name, href, icon: Icon }: (typeof appNav)[number]) => {
     const active = isActive(href);
@@ -39,7 +40,7 @@ export function MobileNav() {
         {tab(invoices)}
         <div className="flex flex-1 items-center justify-center">
           <Link
-            href="/invoices/new"
+            href={newInvoiceHref}
             aria-label="New invoice"
             className="flex h-11 w-11 items-center justify-center rounded-full bg-accent text-accent-foreground shadow-md transition-colors hover:bg-accent-hover"
           >

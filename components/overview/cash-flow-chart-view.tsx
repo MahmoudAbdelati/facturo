@@ -44,7 +44,7 @@ export function CashFlowChartView({ months }: { months: CashFlowMonth[] }) {
   const invoiced = data.reduce((sum, m) => sum + m.invoiced, 0);
 
   return (
-    <Card className="xl:col-span-3">
+    <Card className="@page-xl:col-span-3">
       <CardHeader
         title="Cash flow"
         description={`Last ${range} months`}

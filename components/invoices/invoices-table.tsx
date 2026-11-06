@@ -17,7 +17,7 @@ function daysOverdue(dueDate: string) {
 }
 
 /** "Due 12 Nov", or how late it is for an overdue invoice; nothing once it's paid. */
-function DueNote({ invoice, short = false }: { invoice: InvoiceRow; short?: boolean }) {
+export function DueNote({ invoice, short = false }: { invoice: InvoiceRow; short?: boolean }) {
   const format = short ? formatShortDate : formatDate;
   if (invoice.status === "paid") {
     return invoice.paid_at ? <>Paid {format(invoice.paid_at)}</> : null;
@@ -80,10 +80,17 @@ export async function InvoicesTable({
 
   return (
     <div className="rounded-lg border border-border bg-surface">
-      <ul className="divide-y divide-border md:hidden">
+      <ul className="divide-y divide-border @page-md:hidden">
         {invoices.map((invoice) => (
           <li key={invoice.id} className="relative flex items-center gap-3 py-3 pl-4 pr-2 transition-colors hover:bg-muted/40">
-            <Avatar name={invoice.client_name} />
+            {/* The card opens the invoice; the avatar is a way to the client, raised above the card's link. */}
+            <Link
+              href={`/clients/${invoice.client_id}`}
+              aria-label={`View client ${invoice.client_name}`}
+              className="relative z-10 -m-1 rounded-full p-1 transition-opacity hover:opacity-80"
+            >
+              <Avatar name={invoice.client_name} />
+            </Link>
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-3">
                 {/* The link covers the whole card; the menu sits above it. */}
@@ -113,14 +120,14 @@ export async function InvoicesTable({
 
       {/* Fixed layout: the columns never grow past the container, the client column
           takes what is left and truncates. Widths are in rem so they follow the font size. */}
-      <table className="hidden w-full table-fixed text-sm md:table">
+      <table className="hidden w-full table-fixed text-sm @page-md:table">
         <colgroup>
           <col className="w-36" />
           <col />
           <col className="w-32" />
-          <col className="hidden w-32 xl:table-column" />
+          <col className="hidden w-32 @page-xl:table-column" />
           <col className="w-32" />
-          <col className="w-12 xl:w-32" />
+          <col className="w-12 @page-xl:w-32" />
         </colgroup>
         <thead className="border-b border-border text-left text-muted-foreground">
           <tr>
@@ -134,7 +141,7 @@ export async function InvoicesTable({
             <SortHeader filters={filters} sortKey="total" align="right">
               Amount
             </SortHeader>
-            <SortHeader filters={filters} sortKey="due_date" className="hidden xl:table-cell">
+            <SortHeader filters={filters} sortKey="due_date" className="hidden @page-xl:table-cell">
               Due
             </SortHeader>
             <SortHeader filters={filters} sortKey="status">
@@ -165,9 +172,22 @@ export async function InvoicesTable({
               </td>
               <td className="px-3 py-3">
                 <div className="flex items-center gap-3">
-                  <Avatar name={invoice.client_name} />
+                  {/* Same place as the name; mouse only, the name is the link for keyboards. */}
+                  <Link
+                    href={`/clients/${invoice.client_id}`}
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="shrink-0 rounded-full transition-opacity hover:opacity-80"
+                  >
+                    <Avatar name={invoice.client_name} />
+                  </Link>
                   <div className="min-w-0">
-                    <p className="truncate font-medium">{invoice.client_name}</p>
+                    <Link
+                      href={`/clients/${invoice.client_id}`}
+                      className="block truncate font-medium hover:text-accent-subtle-foreground hover:underline"
+                    >
+                      {invoice.client_name}
+                    </Link>
                     <p className="truncate text-xs text-muted-foreground">{invoice.client_email}</p>
                   </div>
                 </div>
@@ -175,7 +195,7 @@ export async function InvoicesTable({
               <td className="truncate px-3 py-3 text-right font-mono tabular-nums">
                 {formatCurrency(invoice.total, invoice.currency)}
               </td>
-              <td className="hidden truncate px-3 py-3 text-muted-foreground xl:table-cell">
+              <td className="hidden truncate px-3 py-3 text-muted-foreground @page-xl:table-cell">
                 {invoice.status === "paid" ? (
                   <span className="text-muted-foreground/60">—</span>
                 ) : invoice.status === "overdue" ? (
@@ -186,7 +206,7 @@ export async function InvoicesTable({
               </td>
               <td className="px-3 py-3">
                 <StatusBadge status={invoice.status} />
-                <p className="mt-1 truncate text-xs text-muted-foreground xl:hidden">
+                <p className="mt-1 truncate text-xs text-muted-foreground @page-xl:hidden">
                   <DueNote invoice={invoice} />
                 </p>
               </td>

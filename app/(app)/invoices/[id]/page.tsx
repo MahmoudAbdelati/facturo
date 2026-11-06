@@ -3,10 +3,10 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { InvoiceActions } from "@/components/invoices/invoice-actions";
-import { InvoiceBackLink } from "@/components/invoices/invoice-back-link";
 import { InvoiceDocument } from "@/components/invoices/invoice-document";
 import { InvoiceSummary } from "@/components/invoices/invoice-summary";
 import { StatusBadge } from "@/components/invoices/status-badge";
+import { BackLink } from "@/components/layout/back-link";
 import { PageHeader } from "@/components/layout/page-header";
 import { getInvoice } from "@/lib/queries/invoices";
 import { getUserProfile } from "@/lib/queries/users";
@@ -31,7 +31,7 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
       <div className="print:hidden">
         <PageHeader
           title={invoice.number}
-          back={<InvoiceBackLink id={invoice.id} />}
+          back={<BackLink fallback="/invoices" skip={[`/invoices/${invoice.id}`]} />}
           actions={
             <InvoiceActions
               id={invoice.id}
@@ -46,7 +46,7 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
           <span>
             for{" "}
             <Link
-              href={`/invoices?query=${encodeURIComponent(invoice.client_name)}`}
+              href={`/clients/${invoice.client_id}`}
               className="font-medium text-foreground hover:underline"
             >
               {invoice.client_name}
@@ -55,10 +55,10 @@ export default async function InvoicePage(props: { params: Promise<{ id: string 
         </div>
       </div>
 
-      <div className="grid grid-cols-1 items-start gap-6 xl:grid-cols-[minmax(0,1fr)_18rem]">
-        {/* The summary comes first on small screens; from xl it sits to the right. */}
-        <InvoiceSummary invoice={invoice} className="xl:col-start-2 xl:row-start-1" />
-        <div className="mx-auto w-full max-w-3xl xl:col-start-1 xl:row-start-1 print:max-w-none">
+      <div className="grid grid-cols-1 items-start gap-6 @page-xl:grid-cols-[minmax(0,1fr)_18rem]">
+        {/* The summary comes first on small screens; in a wide page it sits to the right. */}
+        <InvoiceSummary invoice={invoice} className="@page-xl:col-start-2 @page-xl:row-start-1" />
+        <div className="mx-auto w-full max-w-3xl @page-xl:col-start-1 @page-xl:row-start-1 print:max-w-none">
           <InvoiceDocument invoice={invoice} from={from} />
         </div>
       </div>

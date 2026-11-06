@@ -11,7 +11,7 @@ export async function RecentActivity() {
   const events = await getRecentActivity(6);
 
   return (
-    <Card className="xl:col-span-2">
+    <Card className="@page-xl:col-span-2">
       <CardHeader title="Recent activity" actions={<CardLink href="/invoices">All invoices</CardLink>} />
       {events.length === 0 ? (
         <EmptyState icon={Inbox} title="Nothing yet" description="Sent invoices and payments show up here." />

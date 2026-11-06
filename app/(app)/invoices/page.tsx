@@ -60,7 +60,7 @@ export default async function InvoicesPage(props: {
 
       <div className="my-4 flex items-center gap-2">
         <Search placeholder="Filter by client or number…" label="Filter invoices" />
-        <div className="xl:hidden">
+        <div className="@page-xl:hidden">
           <SortMenu filters={filters} />
         </div>
       </div>

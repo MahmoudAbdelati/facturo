@@ -34,7 +34,7 @@ function HeaderSkeleton({ description = true }: { description?: boolean }) {
 
 export function CashFlowChartSkeleton() {
   return (
-    <Card className="xl:col-span-3">
+    <Card className="@page-xl:col-span-3">
       <HeaderSkeleton />
       <div className="flex gap-8 px-5 pt-4">
         {[0, 1].map((i) => (
@@ -79,7 +79,7 @@ function ListSkeleton({
   );
 }
 
-export const RecentActivitySkeleton = () => <ListSkeleton rows={6} description={false} className="xl:col-span-2" />;
+export const RecentActivitySkeleton = () => <ListSkeleton rows={6} description={false} className="@page-xl:col-span-2" />;
 export const TopClientsSkeleton = () => <ListSkeleton rows={5} />;
 export const OverdueInvoicesSkeleton = () => <ListSkeleton rows={5} />;
 
@@ -111,12 +111,12 @@ export function OverviewGrid({
 }: Record<"kpis" | "chart" | "activity" | "topClients" | "overdue", React.ReactNode>) {
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3 sm:gap-4 xl:grid-cols-4">{kpis}</div>
-      <div className="grid grid-cols-1 gap-4 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 @page-xl:grid-cols-4">{kpis}</div>
+      <div className="grid grid-cols-1 gap-4 @page-xl:grid-cols-5">
         {chart}
         {activity}
       </div>
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 @page-md:grid-cols-2">
         {topClients}
         {overdue}
       </div>

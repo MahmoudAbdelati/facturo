@@ -64,6 +64,7 @@ export function getClient(id: string): Promise<ClientDetail | undefined> {
         ${clientTotals()},
         c.phone,
         c.created_at::text AS created_at,
+        COUNT(i.id) FILTER (WHERE i.status = 'draft') AS draft_count,
         AVG(i.paid_at - i.issue_date)::float AS avg_days_to_pay
       FROM clients c
       LEFT JOIN ${invoicesWithTotals()} i ON i.client_id = c.id
@@ -75,6 +76,7 @@ export function getClient(id: string): Promise<ClientDetail | undefined> {
     return {
       ...toRow(row),
       phone: row.phone,
+      draft_count: Number(row.draft_count),
       created_at: row.created_at,
       avg_days_to_pay: row.avg_days_to_pay,
     };

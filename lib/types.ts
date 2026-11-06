@@ -133,6 +133,8 @@ export type ClientRow = {
 
 export type ClientDetail = ClientRow & {
   phone: string | null;
+  /** Drafts aren't in invoice_count or the totals. */
+  draft_count: number;
   created_at: string;
   avg_days_to_pay: number | null;
 };

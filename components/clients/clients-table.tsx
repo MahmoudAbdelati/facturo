@@ -2,6 +2,7 @@ import Link from "next/link";
 import { UserSearch } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import {
   Table,
@@ -9,13 +10,11 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
 } from "@/components/ui/table";
 import { formatCurrency, formatDate, formatWholeCurrency } from "@/lib/format";
 import type { ClientRow } from "@/lib/types";
 
-// Until clients get their own page (Day 10), a client links to their invoices.
-const clientHref = (client: ClientRow) => `/invoices?query=${encodeURIComponent(client.name)}`;
+const clientHref = (client: ClientRow) => `/clients/${client.id}`;
 
 function OverdueNote({ cents }: { cents: number }) {
   if (cents <= 0) return null;
@@ -37,7 +36,7 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
 
   return (
     <Card className="overflow-hidden">
-      <ul className="divide-y divide-border md:hidden">
+      <ul className="divide-y divide-border @page-md:hidden">
         {clients.map((client) => (
           <li key={client.id} className="relative flex items-center gap-3 px-4 py-3 transition-colors hover:bg-muted/40">
             <Avatar name={client.name} />
@@ -73,13 +72,13 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
       </ul>
 
       {/* Fixed layout like the invoices table: the client column truncates, nothing scrolls sideways. */}
-      <Table className="hidden table-fixed md:table">
+      <Table className="hidden table-fixed @page-md:table">
         <colgroup>
           <col />
           <col className="w-24" />
-          <col className="w-36 lg:w-44" />
-          <col className="w-32 lg:w-36" />
-          <col className="hidden w-32 xl:table-column" />
+          <col className="w-36 @page-lg:w-44" />
+          <col className="w-32 @page-lg:w-36" />
+          <col className="hidden w-32 @page-xl:table-column" />
         </colgroup>
         <TableHead>
           <tr>
@@ -87,12 +86,12 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
             <TableHeader className="px-4 text-right">Invoices</TableHeader>
             <TableHeader className="px-4 text-right">Outstanding</TableHeader>
             <TableHeader className="px-4 text-right">Paid</TableHeader>
-            <TableHeader className="hidden px-4 text-right xl:table-cell">Last invoice</TableHeader>
+            <TableHeader className="hidden px-4 text-right @page-xl:table-cell">Last invoice</TableHeader>
           </tr>
         </TableHead>
         <TableBody>
           {clients.map((client) => (
-            <TableRow key={client.id}>
+            <ClickableRow key={client.id} href={clientHref(client)} className="transition-colors hover:bg-muted/40">
               <TableCell className="px-4">
                 <div className="flex items-center gap-3">
                   <Avatar name={client.name} />
@@ -125,10 +124,10 @@ export function ClientsTable({ clients }: { clients: ClientRow[] }) {
               <TableCell className="truncate px-4 text-right font-mono tabular-nums">
                 {formatCurrency(client.paid)}
               </TableCell>
-              <TableCell className="hidden truncate px-4 text-right text-muted-foreground xl:table-cell">
+              <TableCell className="hidden truncate px-4 text-right text-muted-foreground @page-xl:table-cell">
                 {client.last_issue_date ? formatDate(client.last_issue_date) : "—"}
               </TableCell>
-            </TableRow>
+            </ClickableRow>
           ))}
         </TableBody>
       </Table>

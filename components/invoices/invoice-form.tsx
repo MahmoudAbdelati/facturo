@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ChevronRight, Coins, Hash, Plus, Trash2, UserRound } from "lucide-react";
 import { DeleteInvoiceDialog } from "@/components/invoices/delete-invoice-dialog";
 import { LineItemSheet } from "@/components/invoices/line-item-sheet";
+import { isFormPath } from "@/components/layout/back-link";
 import { ReturnLink } from "@/components/layout/return-link";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -64,6 +65,8 @@ export type InvoiceFormDefaults = {
   issueDate: string;
   dueDate: string;
   currency: string;
+  /** Preselected client for a new invoice. */
+  clientId?: string;
 };
 
 export function InvoiceForm({
@@ -91,7 +94,7 @@ export function InvoiceForm({
     { itemKeys: [] },
   );
 
-  const [clientId, setClientId] = useState(invoice?.client_id ?? "");
+  const [clientId, setClientId] = useState(invoice?.client_id ?? defaults.clientId ?? "");
   const [issueDate, setIssueDate] = useState(invoice?.issue_date ?? defaults.issueDate);
   const [dueDate, setDueDate] = useState(invoice?.due_date ?? defaults.dueDate);
   const [status, setStatus] = useState<InvoiceStatus>(invoice?.stored_status ?? "draft");
@@ -207,7 +210,7 @@ export function InvoiceForm({
         startTransition(() => formAction(formData));
       }}
       noValidate
-      className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_18rem] xl:items-start"
+      className="grid grid-cols-1 gap-6 @page-xl:grid-cols-[minmax(0,1fr)_18rem] @page-xl:items-start"
     >
       <div className="min-w-0 space-y-6">
         <Card>
@@ -336,7 +339,7 @@ export function InvoiceForm({
             ))}
 
             {/* Phones: a compact read-only list; a row opens the edit sheet. */}
-            <ul className="-mx-5 -mt-1 divide-y divide-border border-y border-border md:hidden">
+            <ul className="-mx-5 -mt-1 divide-y divide-border border-y border-border @page-md:hidden">
               {items.map((item, index) => {
                 const rowErrors = itemErrorsByKey.get(item.key);
                 const firstError = rowErrors && Object.values(rowErrors).flat().find(Boolean);
@@ -379,10 +382,10 @@ export function InvoiceForm({
               })}
             </ul>
 
-            {/* From md: editable rows under column headers. */}
+            {/* With room for it (page-md): editable rows under column headers. */}
             <div
               aria-hidden
-              className="hidden grid-cols-[minmax(0,1fr)_5.5rem_8rem_7rem_2.25rem] gap-3 pb-2 text-xs font-medium text-muted-foreground md:grid"
+              className="hidden grid-cols-[minmax(0,1fr)_5.5rem_8rem_7rem_2.25rem] gap-3 pb-2 text-xs font-medium text-muted-foreground @page-md:grid"
             >
               <span>Description</span>
               <span>Qty</span>
@@ -391,7 +394,7 @@ export function InvoiceForm({
               <span />
             </div>
 
-            <div ref={itemsRef} className="hidden md:block">
+            <div ref={itemsRef} className="hidden @page-md:block">
               {items.map((item, index) => {
                 const rowErrors = itemErrorsByKey.get(item.key) ?? {};
                 const id = `${uid}-${item.key}`;
@@ -478,13 +481,13 @@ export function InvoiceForm({
 
             <FieldError id={`${uid}-items-error`} errors={errors.items} />
 
-            <div className="mt-4 flex flex-wrap items-center justify-between gap-4 md:border-t md:border-border md:pt-4">
+            <div className="mt-4 flex flex-wrap items-center justify-between gap-4 @page-md:border-t @page-md:border-border @page-md:pt-4">
               <Button
                 variant="soft"
                 size="sm"
                 onClick={() => setEditing({ key: `item-${keyCounter.current}`, isNew: true })}
                 disabled={items.length >= MAX_LINE_ITEMS}
-                className="md:hidden"
+                className="@page-md:hidden"
               >
                 <Plus className="h-4 w-4" />
                 Add line item
@@ -494,7 +497,7 @@ export function InvoiceForm({
                 size="sm"
                 onClick={addItem}
                 disabled={items.length >= MAX_LINE_ITEMS}
-                className="hidden md:inline-flex"
+                className="hidden @page-md:inline-flex"
               >
                 <Plus className="h-4 w-4" />
                 Add line item
@@ -531,10 +534,10 @@ export function InvoiceForm({
         </Card>
       </div>
 
-      <Card className="xl:sticky xl:top-20">
+      <Card className="@page-xl:sticky @page-xl:top-20">
         <fieldset className="p-5">
           <legend className="float-left mb-3 w-full text-sm font-medium">Status</legend>
-          <div className="clear-both grid grid-cols-1 gap-2 sm:grid-cols-3 xl:grid-cols-1">
+          <div className="clear-both grid grid-cols-1 gap-2 sm:grid-cols-3 @page-xl:grid-cols-1">
             {STATUSES.map(({ value, label, hint, dot }) => (
               <label
                 key={value}
@@ -578,12 +581,12 @@ export function InvoiceForm({
 
           {/* Delete stays smaller than Save and away from it: on the left from sm,
               in its own section on phones and in the narrow xl column. */}
-          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end xl:flex-col-reverse">
+          <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end @page-xl:flex-col-reverse">
             {invoice && (
               <Button
                 variant="danger-soft"
                 onClick={() => setConfirmingDelete(true)}
-                className="hidden sm:mr-auto sm:inline-flex xl:hidden"
+                className="hidden sm:mr-auto sm:inline-flex @page-xl:hidden"
               >
                 <Trash2 className="h-4 w-4" />
                 Delete invoice
@@ -591,18 +594,19 @@ export function InvoiceForm({
             )}
             {/* Back to wherever the form was opened from: the list, the invoice, the overview. */}
             <ReturnLink
+              skip={isFormPath}
               fallback={invoice ? `/invoices/${invoice.id}` : "/invoices"}
-              className={clsx(buttonClasses("secondary"), "xl:w-full")}
+              className={clsx(buttonClasses("secondary"), "@page-xl:w-full")}
             >
               {() => "Cancel"}
             </ReturnLink>
-            <Button type="submit" aria-disabled={isPending} disabled={isPending} className="xl:w-full">
+            <Button type="submit" aria-disabled={isPending} disabled={isPending} className="@page-xl:w-full">
               {isPending ? "Saving…" : invoice ? "Save changes" : "Create invoice"}
             </Button>
           </div>
 
           {invoice && (
-            <div className="mt-5 border-t border-border pt-5 sm:hidden xl:block">
+            <div className="mt-5 border-t border-border pt-5 sm:hidden @page-xl:block">
               <Button variant="danger-soft" size="sm" onClick={() => setConfirmingDelete(true)}>
                 <Trash2 className="h-4 w-4" />
                 Delete invoice

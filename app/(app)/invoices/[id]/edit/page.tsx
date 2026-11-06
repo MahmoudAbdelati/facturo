@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { BackLink } from "@/components/layout/back-link";
 import { PageHeader } from "@/components/layout/page-header";
 import { InvoiceForm } from "@/components/invoices/invoice-form";
 import { updateInvoice } from "@/lib/actions/invoices";
@@ -24,7 +25,7 @@ export default async function EditInvoicePage(props: { params: Promise<{ id: str
     <>
       <PageHeader
         title={`Edit ${invoice.number}`}
-        crumbs={[{ label: "Invoices", href: "/invoices" }]}
+        back={<BackLink fallback={`/invoices/${invoice.id}`} />}
       />
       <InvoiceForm
         clients={clients}

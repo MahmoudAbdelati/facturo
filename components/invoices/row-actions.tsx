@@ -14,16 +14,22 @@ import type { DisplayStatus } from "@/lib/types";
 const iconButton =
   "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
 
-// From xl up, edit and delete sit in the row; below xl they move into the menu.
+// In a wide page (page-xl) edit and delete sit in the row; narrower, they move into the menu.
 export function RowActions({
   id,
   number,
   status,
+  menuOnly = false,
 }: {
   id: string;
   number: string;
   status: DisplayStatus;
+  /** Keep everything in the ⋯ menu at every width, for narrow tables. */
+  menuOnly?: boolean;
 }) {
+  // Classes for the inline buttons (wide pages) and their menu copies (narrower).
+  const inline = menuOnly ? "hidden" : "hidden @page-xl:flex";
+  const inMenu = menuOnly ? undefined : "@page-xl:hidden";
   const editHref = `/invoices/${id}/edit`;
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -41,7 +47,7 @@ export function RowActions({
         href={editHref}
         aria-label={`Edit ${number}`}
         title="Edit"
-        className={clsx(iconButton, "hidden xl:flex")}
+        className={clsx(iconButton, inline)}
       >
         <Pencil className="h-4 w-4" />
       </Link>
@@ -50,17 +56,17 @@ export function RowActions({
         onClick={() => setConfirmingDelete(true)}
         aria-label={`Delete ${number}`}
         title="Delete"
-        className={clsx(iconButton, "hidden hover:text-danger xl:flex")}
+        className={clsx(iconButton, inline, "hover:text-danger")}
       >
         <Trash2 className="h-4 w-4" />
       </button>
 
       <DropdownMenu label={`Actions for ${number}`} className="w-44">
-        <Link href={editHref} role="menuitem" className={clsx(menuItemClasses, "xl:hidden")}>
+        <Link href={editHref} role="menuitem" className={clsx(menuItemClasses, inMenu)}>
           <Pencil className="h-4 w-4 text-muted-foreground" />
           Edit
         </Link>
-        <div className="xl:hidden">
+        <div className={inMenu}>
           <MenuSeparator />
         </div>
         {STATUS_ACTIONS[status].map((action) => (
@@ -76,7 +82,7 @@ export function RowActions({
             {action.label}
           </button>
         ))}
-        <div className="xl:hidden">
+        <div className={inMenu}>
           <MenuSeparator />
           <button
             type="button"

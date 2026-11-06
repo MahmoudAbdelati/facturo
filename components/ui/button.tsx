@@ -16,8 +16,8 @@ const sizes = {
   sm: "h-8 gap-1.5 px-3 text-sm",
   md: "h-10 gap-2 px-4 text-sm",
   icon: "h-9 w-9",
-  /** Full width, icon-only on the md rail; padding comes back with the label at lg. */
-  rail: "h-10 w-full gap-2 text-sm lg:px-4",
+  /** Full width, icon-only on the rail; padding comes back with the label when the sidebar is open. */
+  rail: "h-10 w-full gap-2 text-sm expanded:px-4",
 } as const;
 
 export type ButtonVariant = keyof typeof variants;

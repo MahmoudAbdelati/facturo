@@ -52,8 +52,10 @@ export function VisitTracker() {
 const LABELS: [RegExp, string][] = [
   [/^\/overview$/, "Overview"],
   [/^\/invoices$/, "Invoices"],
+  [/^\/invoices\/new$/, "New invoice"],
   [/^\/invoices\/[^/]+$/, "Invoice"],
   [/^\/clients$/, "Clients"],
+  [/^\/clients\/new$/, "New client"],
   [/^\/clients\/[^/]+$/, "Client"],
 ];
 

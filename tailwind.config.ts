@@ -1,4 +1,5 @@
 import type { Config } from 'tailwindcss';
+import plugin from 'tailwindcss/plugin';
 
 const token = (name: string) => `hsl(var(--${name}) / <alpha-value>)`;
 
@@ -41,6 +42,15 @@ const config: Config = {
         danger: token('danger'),
         info: token('info'),
       },
+      // Page content responds to the width it gets (`@page-xl:` …), not the screen, since the
+      // sidebar can be collapsed. Each matches the old screen breakpoint with the sidebar open,
+      // less a 17px scrollbar: md 768 − 64 rail − 48 padding − 17 = 639px → 39.5rem;
+      // lg 1024 − 240 − 80 − 17 = 687px → 42rem; xl 1280 − 240 − 80 − 17 = 943px → 58rem.
+      containers: {
+        'page-md': '39.5rem',
+        'page-lg': '42rem',
+        'page-xl': '58rem',
+      },
       borderRadius: {
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
@@ -48,6 +58,13 @@ const config: Config = {
       },
     },
   },
-  plugins: [require('@tailwindcss/forms')],
+  plugins: [
+    require('@tailwindcss/forms'),
+    require('@tailwindcss/container-queries'),
+    // `expanded:` = lg and up with the sidebar open (see components/layout/sidebar-shell.tsx).
+    plugin(({ addVariant }) => {
+      addVariant('expanded', '@media (min-width: 1024px) { [data-sidebar="expanded"] & }');
+    }),
+  ],
 };
 export default config;

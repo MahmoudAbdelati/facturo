@@ -31,6 +31,7 @@
     "zod": "^3.25.17"
   },
   "devDependencies": {
+    "@tailwindcss/container-queries": "0.1.1",
     "@types/bcrypt": "^5.0.2",
     "@types/node": "22.10.7",
     "@types/react": "19.0.7",

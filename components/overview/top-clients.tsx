@@ -25,7 +25,7 @@ export async function TopClients() {
           {clients.map((client) => (
             <li key={client.id}>
               <Link
-                href={`/invoices?query=${encodeURIComponent(client.name)}`}
+                href={`/clients/${client.id}`}
                 className="flex items-center gap-3 rounded-md px-3 py-2 transition-colors hover:bg-muted/60"
               >
                 <Avatar name={client.name} />

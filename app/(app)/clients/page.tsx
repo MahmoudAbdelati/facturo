@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { Plus } from "lucide-react";
 import { ClientsTable } from "@/components/clients/clients-table";
 import { PageHeader } from "@/components/layout/page-header";
+import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Search } from "@/components/ui/search";
 import { formatCurrency, formatWholeCurrency } from "@/lib/format";
@@ -26,7 +29,15 @@ export default async function ClientsPage(props: {
 
   return (
     <>
-      <PageHeader title="Clients" />
+      <PageHeader
+        title="Clients"
+        actions={
+          <Link href="/clients/new" className={buttonClasses()}>
+            <Plus className="h-4 w-4" />
+            New client
+          </Link>
+        }
+      />
       {/* The totals follow the search, so they always add up to the rows below. */}
       <Card className="mb-4 grid grid-cols-3 divide-x divide-border">
         {totals.map((total) => (

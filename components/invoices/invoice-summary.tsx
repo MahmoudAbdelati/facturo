@@ -69,7 +69,7 @@ export function InvoiceSummary({ invoice, className }: { invoice: InvoiceDetail;
   const terms = daysBetween(invoice.issue_date, invoice.due_date);
 
   return (
-    <Card className={clsx("divide-y divide-border xl:sticky xl:top-20 print:hidden", className)}>
+    <Card className={clsx("divide-y divide-border @page-xl:sticky @page-xl:top-20 print:hidden", className)}>
       <div className="p-5">
         <p className="text-xs text-muted-foreground">{paid ? "Total paid" : "Amount due"}</p>
         <p className="mt-1 font-mono text-2xl font-semibold tabular-nums tracking-tight">
@@ -87,8 +87,8 @@ export function InvoiceSummary({ invoice, className }: { invoice: InvoiceDetail;
         </p>
       </div>
 
-      {/* Below xl the sheet right under this already shows the dates and the client. */}
-      <ol aria-label="Timeline" className="hidden space-y-4 p-5 xl:block">
+      {/* In a narrower page (below page-xl) the sheet right under this already shows the dates and the client. */}
+      <ol aria-label="Timeline" className="hidden space-y-4 p-5 @page-xl:block">
         <Step icon={CalendarPlus} label="Issued" date={invoice.issue_date} done />
         <Step
           icon={CalendarClock}
@@ -100,7 +100,7 @@ export function InvoiceSummary({ invoice, className }: { invoice: InvoiceDetail;
         <Step icon={CalendarCheck} label="Paid" date={invoice.paid_at} done={paid} />
       </ol>
 
-      <div className="hidden p-5 text-sm xl:block">
+      <div className="hidden p-5 text-sm @page-xl:block">
         <p className="text-xs text-muted-foreground">Client</p>
         <p className="mt-1 truncate font-medium">{invoice.client_name}</p>
         {invoice.client_company && (

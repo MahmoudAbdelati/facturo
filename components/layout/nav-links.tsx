@@ -16,7 +16,24 @@ export function useIsActive() {
   return (href: string) => pathname === href || pathname.startsWith(`${href}/`);
 }
 
-// Icon-only on the md rail, icon and label from lg up.
+const CLIENT_PAGE = /^\/clients\/([0-9a-f-]{36})$/i;
+
+/** "New invoice" for the client whose page is open, or a blank one anywhere else. */
+export function useNewInvoiceHref() {
+  const clientId = usePathname().match(CLIENT_PAGE)?.[1];
+  return clientId ? `/invoices/new?client=${clientId}` : "/invoices/new";
+}
+
+/** The sidebar's New invoice button; a client component so it can follow the page. */
+export function NewInvoiceLink({ className, children }: { className?: string; children: React.ReactNode }) {
+  return (
+    <Link href={useNewInvoiceHref()} title="New invoice" className={className}>
+      {children}
+    </Link>
+  );
+}
+
+// Icon-only on the rail, icon and label when the sidebar is open (lg and up).
 export function NavLinks() {
   const isActive = useIsActive();
 
@@ -31,7 +48,7 @@ export function NavLinks() {
             aria-current={active ? "page" : undefined}
             title={name}
             className={clsx(
-              "flex h-10 items-center justify-center gap-2.5 rounded-lg px-3 text-sm font-medium transition-colors lg:justify-start",
+              "flex h-10 items-center justify-center gap-2.5 rounded-lg px-3 text-sm font-medium transition-colors expanded:justify-start",
               active
                 ? // bg-muted is almost the sidebar's own colour in light mode
                   "bg-foreground/10 text-foreground dark:bg-muted"
@@ -39,7 +56,7 @@ export function NavLinks() {
             )}
           >
             <Icon className={clsx("h-4 w-4", active && "text-accent")} />
-            <span className="sr-only lg:not-sr-only">{name}</span>
+            <span className="sr-only whitespace-nowrap expanded:not-sr-only">{name}</span>
           </Link>
         );
       })}

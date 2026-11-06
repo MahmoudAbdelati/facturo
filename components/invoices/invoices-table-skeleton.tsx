@@ -2,11 +2,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const ROWS = 10;
 
-/** Same shape as the table: cards below md, the column layout from md. */
+/** Same shape as the table: cards in a narrow page, the column layout from page-md. */
 export function InvoicesTableSkeleton() {
   return (
     <div className="rounded-lg border border-border bg-surface" aria-busy="true" aria-label="Loading invoices">
-      <ul className="divide-y divide-border md:hidden">
+      <ul className="divide-y divide-border @page-md:hidden">
         {Array.from({ length: ROWS }, (_, i) => (
           <li key={i} className="flex items-center gap-3 py-3 pl-4 pr-2">
             <Skeleton className="h-7 w-7 shrink-0 rounded-full" />
@@ -25,13 +25,13 @@ export function InvoicesTableSkeleton() {
         ))}
       </ul>
 
-      <div className="hidden md:block">
+      <div className="hidden @page-md:block">
         <div className="flex h-11 items-center gap-6 border-b border-border px-3">
           <Skeleton className="h-3 w-14" />
           <Skeleton className="h-3 w-12" />
           <Skeleton className="ml-auto h-3 w-14" />
           <Skeleton className="h-3 w-12" />
-          <div className="w-12 xl:w-32" />
+          <div className="w-12 @page-xl:w-32" />
         </div>
         <div className="divide-y divide-border">
           {Array.from({ length: ROWS }, (_, i) => (
@@ -49,7 +49,7 @@ export function InvoicesTableSkeleton() {
               </div>
               <Skeleton className="h-4 w-20" />
               <Skeleton className="h-5 w-16 rounded-full" />
-              <div className="w-12 xl:w-32" />
+              <div className="w-12 @page-xl:w-32" />
             </div>
           ))}
         </div>
