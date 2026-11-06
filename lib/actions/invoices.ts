@@ -157,3 +157,45 @@ function statusAssignment(status: InvoiceStatus) {
     ? sql`status = 'paid', paid_at = COALESCE(paid_at, GREATEST(issue_date, CURRENT_DATE))`
     : sql`status = ${status}, paid_at = NULL`;
 }
+
+/**
+ * Copies an invoice as a new draft dated today, with the same client, items, notes
+ * and payment terms. Returns the copy so the caller can open it.
+ */
+export async function duplicateInvoice(
+  id: string,
+): Promise<{ ok: true; invoice: { id: string; number: string } } | { ok: false }> {
+  if (!isUuid(id)) return { ok: false };
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const number = await getNextInvoiceNumber();
+      const copyId = await sql.begin(async (tx) => {
+        const [copy] = await tx`
+          INSERT INTO invoices (number, client_id, issue_date, due_date, status, currency, notes, paid_at)
+          SELECT ${number}, client_id, CURRENT_DATE, CURRENT_DATE + (due_date - issue_date),
+                 'draft', currency, notes, NULL
+          FROM invoices
+          WHERE id = ${id}
+          RETURNING id`;
+        if (!copy) return null;
+
+        await tx`
+          INSERT INTO invoice_items (invoice_id, description, quantity, unit_price, position)
+          SELECT ${copy.id}, description, quantity, unit_price, position
+          FROM invoice_items
+          WHERE invoice_id = ${id}`;
+        return copy.id as string;
+      });
+
+      if (!copyId) return { ok: false };
+      revalidateInvoices();
+      return { ok: true, invoice: { id: copyId, number } };
+    } catch (error) {
+      if (isUniqueViolation(error) && attempt < 2) continue;
+      console.error(error);
+      return { ok: false };
+    }
+  }
+  return { ok: false };
+}

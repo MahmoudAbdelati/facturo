@@ -4,7 +4,9 @@
 
 /* Color tokens are HSL channels so Tailwind opacity modifiers work (bg-accent/10). */
 @layer base {
-  :root {
+  /* .theme-light keeps a part of the page light in dark mode: the invoice sheet is paper. */
+  :root,
+  .theme-light {
     --background: 0 0% 100%;
     --foreground: 240 10% 3.9%;
     --surface: 0 0% 98%;
@@ -77,5 +79,20 @@ input[type='number']::-webkit-outer-spin-button {
 @keyframes sheet-in {
   from {
     transform: translateY(100%);
+  }
+}
+
+/* Printing an invoice: only the sheet, on white paper. */
+@media print {
+  @page {
+    margin: 14mm 12mm;
+  }
+
+  body {
+    background: white;
+  }
+
+  [data-sonner-toaster] {
+    display: none;
   }
 }

@@ -6,16 +6,20 @@ type Crumb = { label: string; href: string };
 export function PageHeader({
   title,
   crumbs,
+  back,
   actions,
 }: {
   title: string;
   crumbs?: Crumb[];
+  /** A link back to where the user came from, shown instead of breadcrumbs. */
+  back?: React.ReactNode;
   actions?: React.ReactNode;
 }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        {crumbs && (
+        {back}
+        {!back && crumbs && (
           <nav aria-label="Breadcrumb" className="mb-1">
             <ol className="flex items-center gap-1 text-sm text-muted-foreground">
               {crumbs.map((crumb) => (

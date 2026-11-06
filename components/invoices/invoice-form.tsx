@@ -1,13 +1,13 @@
 "use client";
 
 import clsx from "clsx";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Fragment, startTransition, useActionState, useEffect, useId, useRef, useState } from "react";
 import { toast } from "sonner";
 import { ChevronRight, Coins, Hash, Plus, Trash2, UserRound } from "lucide-react";
 import { DeleteInvoiceDialog } from "@/components/invoices/delete-invoice-dialog";
 import { LineItemSheet } from "@/components/invoices/line-item-sheet";
+import { ReturnLink } from "@/components/layout/return-link";
 import { Button, buttonClasses } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { FieldError, Input, Label, Select, Textarea } from "@/components/ui/input";
@@ -137,7 +137,7 @@ export function InvoiceForm({
   useEffect(() => {
     if (state.status === "success" && state.invoice) {
       toast.success(invoice ? `${state.invoice.number} saved` : `${state.invoice.number} created`);
-      router.push("/invoices");
+      router.push(`/invoices/${state.invoice.id}`);
     } else if (state.status === "error") {
       // Only fields shown at this screen size: phones and desktops show items differently.
       const invalid = Array.from(
@@ -589,9 +589,13 @@ export function InvoiceForm({
                 Delete invoice
               </Button>
             )}
-            <Link href="/invoices" className={clsx(buttonClasses("secondary"), "xl:w-full")}>
-              Cancel
-            </Link>
+            {/* Back to wherever the form was opened from: the list, the invoice, the overview. */}
+            <ReturnLink
+              fallback={invoice ? `/invoices/${invoice.id}` : "/invoices"}
+              className={clsx(buttonClasses("secondary"), "xl:w-full")}
+            >
+              {() => "Cancel"}
+            </ReturnLink>
             <Button type="submit" aria-disabled={isPending} disabled={isPending} className="xl:w-full">
               {isPending ? "Saving…" : invoice ? "Save changes" : "Create invoice"}
             </Button>

@@ -29,7 +29,7 @@ export async function OverdueInvoices() {
           {invoices.map((invoice) => (
             <li key={invoice.id}>
               <Link
-                href={`/invoices/${invoice.id}/edit`}
+                href={`/invoices/${invoice.id}`}
                 className="flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/60"
               >
                 <div className="min-w-0 flex-1">

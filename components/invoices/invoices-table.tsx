@@ -3,19 +3,17 @@ import { FilePlus2, FileSearch } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { ClickableRow } from "@/components/ui/clickable-row";
 import { EmptyState } from "@/components/ui/empty-state";
 import { RowActions } from "@/components/invoices/row-actions";
 import { SortHeader } from "@/components/invoices/sort-header";
 import { StatusBadge } from "@/components/invoices/status-badge";
-import { formatCurrency, formatDate, formatShortDate } from "@/lib/format";
+import { daysBetween, formatCurrency, formatDate, formatShortDate, todayIso } from "@/lib/format";
 import { getInvoices } from "@/lib/queries/invoices";
 import type { InvoiceFilters, InvoiceRow } from "@/lib/types";
 
-const DAY = 86_400_000;
-
 function daysOverdue(dueDate: string) {
-  const today = new Date(new Date().toISOString().slice(0, 10));
-  return Math.round((today.getTime() - new Date(dueDate).getTime()) / DAY);
+  return daysBetween(dueDate, todayIso());
 }
 
 /** "Due 12 Nov", or how late it is for an overdue invoice; nothing once it's paid. */
@@ -84,11 +82,17 @@ export async function InvoicesTable({
     <div className="rounded-lg border border-border bg-surface">
       <ul className="divide-y divide-border md:hidden">
         {invoices.map((invoice) => (
-          <li key={invoice.id} className="flex items-center gap-3 py-3 pl-4 pr-2">
+          <li key={invoice.id} className="relative flex items-center gap-3 py-3 pl-4 pr-2 transition-colors hover:bg-muted/40">
             <Avatar name={invoice.client_name} />
             <div className="min-w-0 flex-1">
               <div className="flex items-baseline justify-between gap-3">
-                <p className="truncate text-sm font-medium">{invoice.client_name}</p>
+                {/* The link covers the whole card; the menu sits above it. */}
+                <Link
+                  href={`/invoices/${invoice.id}`}
+                  className="truncate text-sm font-medium after:absolute after:inset-0 focus-visible:ring-0 after:focus-visible:rounded-sm after:focus-visible:ring-2 after:focus-visible:ring-inset after:focus-visible:ring-ring"
+                >
+                  {invoice.client_name}
+                </Link>
                 <p className="shrink-0 font-mono text-sm tabular-nums">
                   {formatCurrency(invoice.total, invoice.currency)}
                 </p>
@@ -100,7 +104,9 @@ export async function InvoicesTable({
                 <StatusBadge status={invoice.status} compact />
               </div>
             </div>
-            <RowActions id={invoice.id} number={invoice.number} status={invoice.status} />
+            <div className="relative">
+              <RowActions id={invoice.id} number={invoice.number} status={invoice.status} />
+            </div>
           </li>
         ))}
       </ul>
@@ -141,10 +147,14 @@ export async function InvoicesTable({
         </thead>
         <tbody className="divide-y divide-border">
           {invoices.map((invoice) => (
-            <tr key={invoice.id} className="transition-colors hover:bg-muted/40">
+            <ClickableRow
+              key={invoice.id}
+              href={`/invoices/${invoice.id}`}
+              className="transition-colors hover:bg-muted/40"
+            >
               <td className="whitespace-nowrap px-3 py-3">
                 <Link
-                  href={`/invoices/${invoice.id}/edit`}
+                  href={`/invoices/${invoice.id}`}
                   className="block truncate font-mono hover:text-accent-subtle-foreground hover:underline"
                 >
                   {invoice.number}
@@ -183,7 +193,7 @@ export async function InvoicesTable({
               <td className="px-2 py-3">
                 <RowActions id={invoice.id} number={invoice.number} status={invoice.status} />
               </td>
-            </tr>
+            </ClickableRow>
           ))}
         </tbody>
       </table>

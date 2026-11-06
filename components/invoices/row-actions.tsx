@@ -4,30 +4,15 @@ import clsx from "clsx";
 import Link from "next/link";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { CircleCheck, Pencil, Send, Trash2, Undo2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
+import { STATUS_ACTIONS, type StatusAction } from "@/components/invoices/status-actions";
 import { DeleteInvoiceDialog } from "@/components/invoices/delete-invoice-dialog";
 import { DropdownMenu, MenuSeparator, menuItemClasses } from "@/components/ui/dropdown-menu";
 import { setInvoiceStatus } from "@/lib/actions/invoices";
-import type { DisplayStatus, InvoiceStatus } from "@/lib/types";
+import type { DisplayStatus } from "@/lib/types";
 
 const iconButton =
   "flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground";
-
-type StatusAction = { to: InvoiceStatus; label: string; done: string; icon: typeof Send };
-
-/** What a status can move to next, in the order the menu lists them. */
-const STATUS_ACTIONS: Record<DisplayStatus, StatusAction[]> = {
-  draft: [
-    { to: "sent", label: "Mark as sent", done: "marked as sent", icon: Send },
-    { to: "paid", label: "Mark as paid", done: "marked as paid", icon: CircleCheck },
-  ],
-  sent: [
-    { to: "paid", label: "Mark as paid", done: "marked as paid", icon: CircleCheck },
-    { to: "draft", label: "Back to draft", done: "moved back to draft", icon: Undo2 },
-  ],
-  overdue: [{ to: "paid", label: "Mark as paid", done: "marked as paid", icon: CircleCheck }],
-  paid: [{ to: "sent", label: "Mark as unpaid", done: "marked as unpaid", icon: Undo2 }],
-};
 
 // From xl up, edit and delete sit in the row; below xl they move into the menu.
 export function RowActions({

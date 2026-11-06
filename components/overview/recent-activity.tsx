@@ -22,9 +22,8 @@ export async function RecentActivity() {
             const Icon = paid ? CircleCheck : Send;
             return (
               <li key={`${event.type}-${event.invoice_id}`}>
-                {/* The edit page stands in until invoices get their own detail page. */}
                 <Link
-                  href={`/invoices/${event.invoice_id}/edit`}
+                  href={`/invoices/${event.invoice_id}`}
                   className="flex items-center gap-3 rounded-md px-3 py-2.5 transition-colors hover:bg-muted/60"
                 >
                   <span
