@@ -10,7 +10,7 @@
 </p>
 
 <p align="center">
-  <a href="https://nextjs-dashboard-mh-dev1.vercel.app">Live demo</a> ·
+  <a href="https://getfacturo.vercel.app">Live demo</a> ·
   <a href="#getting-started">Run it locally</a>
 </p>
 
@@ -52,7 +52,7 @@ Overdue is never stored: an invoice is overdue when it has been sent and its due
 
 ## Try the demo
 
-Open the [live demo](https://nextjs-dashboard-mh-dev1.vercel.app) and click **Try the demo**, or log in with:
+Open the [live demo](https://getfacturo.vercel.app) and click **Try the demo**, or log in with:
 
 | Email              | Password       |
 | ------------------ | -------------- |
