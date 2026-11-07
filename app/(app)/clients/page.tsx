@@ -59,7 +59,7 @@ export default async function ClientsPage(props: {
       <div className="mb-4">
         <Search placeholder="Search clients…" />
       </div>
-      <ClientsTable clients={clients} />
+      <ClientsTable clients={clients} query={searchParams?.query} />
     </>
   );
 }

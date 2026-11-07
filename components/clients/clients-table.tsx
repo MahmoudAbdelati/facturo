@@ -1,6 +1,7 @@
 import Link from "next/link";
-import { UserSearch } from "lucide-react";
+import { UserPlus, UserSearch } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
+import { buttonClasses } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ClickableRow } from "@/components/ui/clickable-row";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -25,11 +26,33 @@ function OverdueNote({ cents }: { cents: number }) {
   );
 }
 
-export function ClientsTable({ clients }: { clients: ClientRow[] }) {
+export function ClientsTable({ clients, query }: { clients: ClientRow[]; query?: string }) {
   if (clients.length === 0) {
     return (
       <Card>
-        <EmptyState icon={UserSearch} title="No clients found" description="Try a different search." />
+        {query ? (
+          <EmptyState
+            icon={UserSearch}
+            title="No clients match"
+            description={`Nothing found for “${query}”. Try a name, company or email.`}
+            action={
+              <Link href="/clients" className={buttonClasses("secondary", "sm")}>
+                Clear search
+              </Link>
+            }
+          />
+        ) : (
+          <EmptyState
+            icon={UserPlus}
+            title="No clients yet"
+            description="Add the people and companies you bill, then invoice them in a couple of clicks."
+            action={
+              <Link href="/clients/new" className={buttonClasses("primary", "sm")}>
+                Add client
+              </Link>
+            }
+          />
+        )}
       </Card>
     );
   }

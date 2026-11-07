@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
-import { auth } from "@/auth";
 import { CashFlowChart } from "@/components/overview/cash-flow-chart";
 import { KpiCards } from "@/components/overview/kpi-cards";
 import { OverdueInvoices } from "@/components/overview/overdue-invoices";
@@ -14,14 +13,15 @@ import {
   RecentActivitySkeleton,
   TopClientsSkeleton,
 } from "@/components/overview/skeletons";
+import { getCurrentUser } from "@/lib/queries/users";
 
 export const metadata: Metadata = {
   title: "Overview",
 };
 
 export default async function OverviewPage() {
-  const session = await auth();
-  const firstName = session?.user?.name?.split(/\s+/)[0];
+  const user = await getCurrentUser();
+  const firstName = user?.name.split(/\s+/)[0];
 
   return (
     <>

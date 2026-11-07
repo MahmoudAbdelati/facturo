@@ -57,6 +57,7 @@ const LABELS: [RegExp, string][] = [
   [/^\/clients$/, "Clients"],
   [/^\/clients\/new$/, "New client"],
   [/^\/clients\/[^/]+$/, "Client"],
+  [/^\/settings$/, "Settings"],
 ];
 
 /** What a back link to this URL should say. */

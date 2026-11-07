@@ -1,3 +1,5 @@
+import { cache } from "react";
+import { auth } from "@/auth";
 import { sql } from "@/lib/db";
 import { withErrorMessage } from "./shared";
 
@@ -24,3 +26,22 @@ export function getUserProfile(email: string | null | undefined): Promise<UserPr
     return row as UserProfile | undefined;
   });
 }
+
+export type CurrentUser = UserProfile & { id: string; currency: string };
+
+/**
+ * The signed-in user as the database has them now. The session keeps the name from when
+ * they logged in, so anything that shows it after a settings change reads it from here.
+ * Cached per request: the top bar and the page both ask for it.
+ */
+export const getCurrentUser = cache(async (): Promise<CurrentUser | undefined> => {
+  const session = await auth();
+  const email = session?.user?.email;
+  if (!email) return undefined;
+  return withErrorMessage("Failed to load your settings.", async () => {
+    const [row] = await sql`
+      SELECT id, name, email, company_name, currency FROM users WHERE email = ${email}`;
+    if (!row) return undefined;
+    return { ...(row as CurrentUser), currency: (row.currency as string).trim() };
+  });
+});

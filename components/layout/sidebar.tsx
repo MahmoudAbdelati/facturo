@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Plus } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { NavLinks, NewInvoiceLink } from "@/components/layout/nav-links";
+import { NavLinks, NewInvoiceLink, settingsNav } from "@/components/layout/nav-links";
 import { SidebarToggle } from "@/components/layout/sidebar-shell";
 import { buttonClasses } from "@/components/ui/button";
 
@@ -29,6 +29,10 @@ export function Sidebar() {
 
       <nav aria-label="Main" className="flex flex-col gap-1">
         <NavLinks />
+      </nav>
+
+      <nav aria-label="Account" className="mt-auto flex flex-col gap-1">
+        <NavLinks items={[settingsNav]} />
       </nav>
     </div>
   );

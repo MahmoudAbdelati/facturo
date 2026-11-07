@@ -3,13 +3,16 @@
 import clsx from "clsx";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FileText, LayoutDashboard, Users } from "lucide-react";
+import { FileText, LayoutDashboard, Settings, Users } from "lucide-react";
 
 export const appNav = [
   { name: "Overview", href: "/overview", icon: LayoutDashboard },
   { name: "Invoices", href: "/invoices", icon: FileText },
   { name: "Clients", href: "/clients", icon: Users },
 ];
+
+/** Kept apart from appNav: it sits at the foot of the sidebar and in the account menu on phones. */
+export const settingsNav = { name: "Settings", href: "/settings", icon: Settings };
 
 export function useIsActive() {
   const pathname = usePathname();
@@ -34,12 +37,12 @@ export function NewInvoiceLink({ className, children }: { className?: string; ch
 }
 
 // Icon-only on the rail, icon and label when the sidebar is open (lg and up).
-export function NavLinks() {
+export function NavLinks({ items = appNav }: { items?: (typeof appNav)[number][] }) {
   const isActive = useIsActive();
 
   return (
     <>
-      {appNav.map(({ name, href, icon: Icon }) => {
+      {items.map(({ name, href, icon: Icon }) => {
         const active = isActive(href);
         return (
           <Link

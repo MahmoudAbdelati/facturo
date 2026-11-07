@@ -54,7 +54,12 @@ export function CashFlowChartView({ months }: { months: CashFlowMonth[] }) {
         <Total label="Collected" value={collected} color={COLLECTED} />
         <Total label="Invoiced" value={invoiced} color={INVOICED} dashed />
       </dl>
-      <div className="px-2 pb-4 pt-4 sm:px-3" style={{ height: CHART_HEIGHT }}>
+      <div className="relative px-2 pb-4 pt-4 sm:px-3" style={{ height: CHART_HEIGHT }}>
+        {collected === 0 && invoiced === 0 && (
+          <p className="absolute inset-0 z-10 flex items-center justify-center px-6 text-center text-sm text-muted-foreground">
+            No invoices in the last {range} months. Send one and it shows up here.
+          </p>
+        )}
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: 0 }}>
             <defs>

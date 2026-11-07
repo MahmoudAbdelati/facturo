@@ -3,7 +3,8 @@
 import { useSyncExternalStore } from "react";
 import { useTheme } from "next-themes";
 import clsx from "clsx";
-import { Check, ChevronDown, LogOut, Monitor, Moon, Sun } from "lucide-react";
+import Link from "next/link";
+import { Check, ChevronDown, LogOut, Monitor, Moon, Settings, Sun } from "lucide-react";
 import { Avatar } from "@/components/ui/avatar";
 import { DropdownMenu, MenuSeparator, menuItemClasses } from "@/components/ui/dropdown-menu";
 import { logOut } from "@/lib/actions/auth";
@@ -66,6 +67,10 @@ export function UserMenu({ name, email }: { name: string; email: string }) {
       </div>
 
       <MenuSeparator />
+      <Link href="/settings" role="menuitem" className={menuItemClasses}>
+        <Settings className="h-4 w-4 text-muted-foreground" />
+        Settings
+      </Link>
       <form action={logOut}>
         <button type="submit" role="menuitem" className={menuItemClasses}>
           <LogOut className="h-4 w-4 text-muted-foreground" />
