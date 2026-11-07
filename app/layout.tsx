@@ -1,16 +1,37 @@
 import "@/app/globals.css";
 import { geistMono, geistSans } from "@/lib/fonts";
 import { Providers } from "@/components/theme/providers";
-import { Metadata } from "next";
+import { site, siteUrl } from "@/lib/site";
+import type { Metadata, Viewport } from "next";
 
 export const metadata: Metadata = {
+  metadataBase: siteUrl(),
   title: {
-    template: "%s | Facturo",
-    default: "Facturo – Get paid, not chased",
+    template: `%s | ${site.name}`,
+    default: `${site.name} – ${site.tagline.replace(/\.$/, "")}`,
   },
-  description:
-    "Facturo is invoicing for freelancers and small studios: send invoices, track what's paid, due and overdue, and see your cash flow.",
-  applicationName: "Facturo",
+  description: site.description,
+  applicationName: site.name,
+  openGraph: {
+    type: "website",
+    siteName: site.name,
+    title: `${site.name} – ${site.tagline.replace(/\.$/, "")}`,
+    description: site.description,
+    url: "/",
+    locale: "en_US",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${site.name} – ${site.tagline.replace(/\.$/, "")}`,
+    description: site.description,
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: site.colors.background },
+  ],
 };
 
 export default function RootLayout({
