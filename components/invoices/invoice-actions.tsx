@@ -57,7 +57,9 @@ export function InvoiceActions({
     startTransition(async () => {
       const result = await duplicateInvoice(id);
       if (!result.ok) {
-        toast.error(`Couldn't duplicate ${number}`, { description: "Please try again." });
+        toast.error(`Couldn't duplicate ${number}`, {
+          description: result.message ?? "Please try again.",
+        });
         return;
       }
       toast.success(`Copied ${number} as ${result.invoice.number}`, {

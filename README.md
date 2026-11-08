@@ -58,7 +58,7 @@ Open the [live demo](https://getfacturo.vercel.app) and click **Try the demo**, 
 | ------------------ | -------------- |
 | `demo@facturo.app` | `facturo-demo` |
 
-The demo workspace holds 25 fictional clients and about 150 invoices spread over the last year.
+The demo workspace holds 25 fictional clients and about 150 invoices spread over the last year. Everyone shares it, so it resets to that state every night; feel free to edit or delete anything.
 
 ## Stack
 
@@ -70,7 +70,7 @@ The demo workspace holds 25 fictional clients and about 150 invoices spread over
 
 ## Getting started
 
-You need Node.js 22.18 or newer (the scripts are TypeScript run directly by Node), [pnpm](https://pnpm.io) and a Postgres database (Neon, Supabase or a local one; SSL is required).
+You need Node.js 22.18 or newer (the scripts are TypeScript run directly by Node), [pnpm](https://pnpm.io) and a Postgres database (Neon, Supabase or a local one). SSL is required unless the URL ends in `?sslmode=disable`.
 
 ```bash
 pnpm install
@@ -85,7 +85,8 @@ Fill in `.env`:
 | `AUTH_SECRET`                    | Session secret, generate one with `npx auth secret`                            |
 | `DEMO_EMAIL` / `DEMO_PASSWORD`   | The demo account the seed creates and "Try the demo" logs in to                |
 | `SITE_URL`                       | Public URL for social cards (optional; Vercel provides its production domain)  |
-| `DEMO_DISABLED`                  | Set to `1` to hide the "Try the demo" button                                   |
+| `DEMO_DISABLED`                  | Set to `1` to hide the "Try the demo" button and turn off the nightly reset    |
+| `CRON_SECRET`                    | Protects the nightly demo reset (production only, see Deploying)               |
 
 Create the tables and the demo data, then start the app:
 
@@ -105,6 +106,7 @@ pnpm dev
 | `pnpm start`       | Serve the production build                                              |
 | `pnpm lint`        | ESLint                                                                  |
 | `pnpm db:seed`     | Reset the database and load the demo workspace                          |
+| `pnpm test:e2e`    | Playwright smoke tests (needs `E2E_POSTGRES_URL`, see Tests)            |
 | `pnpm screenshots` | Retake the screenshots in `public/screenshots` from a running app       |
 
 ## Project structure
@@ -120,8 +122,22 @@ lib/
   actions/       Server Actions (invoices, clients, settings, auth)
   validations/   Zod schemas
 scripts/         seed and screenshot scripts
+e2e/             Playwright smoke tests
 ```
+
+## Tests
+
+The Playwright tests build the app, seed a database, then log in to the demo, create and delete an invoice and a client, and check the nightly reset. They change data, so they never use `POSTGRES_URL` from `.env`: give them a throwaway database instead (a local one, unless you set `E2E_ALLOW_REMOTE_DB=1`).
+
+```bash
+pnpm exec playwright install chromium
+E2E_POSTGRES_URL="postgres://postgres:postgres@localhost:5432/facturo_e2e?sslmode=disable" pnpm test:e2e
+```
+
+GitHub Actions runs lint, type-check and these tests on every pull request and on pushes to `master`, against a Postgres service container.
 
 ## Deploying
 
 Import the repository on [Vercel](https://vercel.com), add `POSTGRES_URL` and `AUTH_SECRET` (and optionally the demo variables), and deploy. Run `pnpm db:seed` once against the production database to create the tables.
+
+The demo resets itself every night at 03:00 UTC: Vercel Cron (`vercel.json`) calls `/api/cron/reset-demo`, which replaces the clients, invoices and the demo user's profile with fresh seed data and keeps the schema. Add a `CRON_SECRET` environment variable (any long random string) so Vercel can call it; without one the route refuses every request.

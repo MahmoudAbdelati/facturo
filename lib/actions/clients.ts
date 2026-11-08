@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { sql } from "@/lib/db";
+import { demoLimitMessage } from "@/lib/demo";
 import { isUuid } from "@/lib/queries/shared";
 import {
   clientErrors,
@@ -22,6 +23,9 @@ export async function createClient(
 ): Promise<ClientFormState> {
   const parsed = clientSchema.safeParse(clientFromFormData(formData));
   if (!parsed.success) return clientErrors(parsed.error);
+
+  const limit = await demoLimitMessage("clients");
+  if (limit) return { status: "error", message: limit };
 
   const input = parsed.data;
   try {

@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import type { TransactionSql } from "postgres";
 import { sql } from "@/lib/db";
+import { demoLimitMessage } from "@/lib/demo";
 import { getNextInvoiceNumber } from "@/lib/queries/invoices";
 import { isUuid } from "@/lib/queries/shared";
 import type { InvoiceStatus } from "@/lib/types";
@@ -49,6 +50,9 @@ export async function createInvoice(
 ): Promise<InvoiceFormState> {
   const parsed = invoiceSchema.safeParse(invoiceFromFormData(formData));
   if (!parsed.success) return invoiceErrors(parsed.error);
+
+  const limit = await demoLimitMessage("invoices");
+  if (limit) return { status: "error", message: limit };
 
   const input = parsed.data;
 
@@ -164,8 +168,11 @@ function statusAssignment(status: InvoiceStatus) {
  */
 export async function duplicateInvoice(
   id: string,
-): Promise<{ ok: true; invoice: { id: string; number: string } } | { ok: false }> {
+): Promise<{ ok: true; invoice: { id: string; number: string } } | { ok: false; message?: string }> {
   if (!isUuid(id)) return { ok: false };
+
+  const limit = await demoLimitMessage("invoices");
+  if (limit) return { ok: false, message: limit };
 
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
